@@ -1,52 +1,99 @@
-import autogen
+import yaml
+from autogen import ConversableAgent
+import sys
+import os
 
-with open('key.txt', 'r') as file:
-    key = file.read()
 
-config_list = [
-    {
-        'model': 'gpt-4o-mini',
-        'api_key': key
-    }
-]
+def read_prompt(path):
+    """
+    Read all prompt from yaml file
+    :param path: [string] Yaml file path
+    :return: All prompt for agents
+    """
+    with open(path, 'r') as f:
+        return yaml.safe_load(f)
 
-llm_config = {
-    "seed": 42,
-    "config_list": config_list,
-    "temperature": 0,
-}
 
-assistant = autogen.AssistantAgent(
-    name="assistant",
-    llm_config=llm_config,
-)
+# TODO Add interaction with database to check stock availability.
+def check_availability(ingredients: list) -> list:
+    """
+    Check availability based on real-time stock.
+    :param ingredients: [list] It should be a list of dict with name, quantity, and brand if applicable.
+    :return: [list] Applicable list
+    """
+    print("========================================")
+    print("Checking")
 
-user_proxy = autogen.UserProxyAgent(
-    name="user_proxy",
-    human_input_mode="TERMINATE",
-    max_consecutive_auto_reply=10, # Too high, infinite loop
-    # is_termination_msg=lambda x: x.get("content", "").rstrip().endswitch("TERMINATE"),
-    code_execution_config=False,
-    llm_config=llm_config,
-    system_message="Reply TERMINATE if the task has been solved."
-)
+    for ingredient in ingredients:
+        ingredient["availability"] = True
 
-task = """
-Give me a recipe of pasta with tomato sauce
-"""
+        # Check stock
+        print(ingredient)
 
-user_proxy.initiate_chat(
-    assistant,
-    message=task
-)
+    return ingredients
 
-# from autogen import AssistantAgent, UserProxyAgent, config_list_from_json
-# # Load LLM inference endpoints from an env variable or a file
-# # See https://microsoft.github.io/autogen/docs/FAQ#set-your-api-endpoints
-# # and OAI_CONFIG_LIST_sample
-# # config_list = config_list_from_json(env_or_file="OAI_CONFIG_LIST")
-# # You can also set config_list directly as a list, for example, config_list = [{'model': 'gpt-4', 'api_key': '<your OpenAI API key here>'},]
-# assistant = AssistantAgent("assistant", llm_config={"config_list": config_list})
-# user_proxy = UserProxyAgent("user_proxy", code_execution_config={"work_dir": "coding", "use_docker": False}) # IMPORTANT: set to True to run code in docker, recommended
-# user_proxy.initiate_chat(assistant, message="Plot a chart of NVDA and TESLA stock price change YTD.")
-# # This initiates an automated chat between the two agents to solve the task
+
+def main(user_query, sys_msg):
+    """
+    Initiate chat workflow, return back applicable shopping list.
+    :param user_query: [string]
+    :param sys_msg: [dict] System message for agents.
+    :return:
+    """
+    llm_config = {"config_list": [{"model": "gpt-4o-mini", "api_key": os.environ.get("OPENAI_API_KEY")}]}
+
+    # Define customer manager to chat with customers and other staff.
+    customer_manager = ConversableAgent(name="customer_manager_agent",
+                                        system_message=sys_msg["customer_manager"],
+                                        llm_config=llm_config)
+
+    # Define chef de cuisine to break down recipe.
+    chef_de_cuisine = ConversableAgent(name="chef_de_cuisine",
+                                       system_message=sys_msg["chef_de_cuisine"],
+                                       llm_config=llm_config,
+                                       human_input_mode="NEVER",
+                                       max_consecutive_auto_reply=1)
+
+    # Define line cook to check ingredient availability.
+    line_cook = ConversableAgent(name="line_cook",
+                                 system_message=sys_msg["line_cook"],
+                                 llm_config=llm_config,
+                                 human_input_mode="NEVER",
+                                 max_consecutive_auto_reply=1)
+
+    line_cook.register_for_llm(name="check_availability",
+                               description="Fetch ingredients availability for the recipe.")(check_availability)
+    customer_manager.register_for_execution(name="check_availability")(check_availability)
+
+    result = customer_manager.initiate_chats(
+        [
+            {
+                "recipient": chef_de_cuisine,
+                "message": user_query,
+                "max_turns": 1,
+                "summary_args": {
+                    "summary_prompt": "Only keep ingredient list."},
+            },
+            {
+                "recipient": line_cook,
+                "message": "This is the recipe ingredient list, please check availability",
+                "max_turns": 2,
+                "summary_args": {
+                    "summary_prompt": "Make the response as a jason file"},
+            }
+        ]
+    )
+    print(result[1].summary)
+    return result
+
+
+if __name__ == "__main__":
+    prompt_path = "../assets/prompt.yaml"
+    prompt_bank = read_prompt(prompt_path)
+
+    try:
+        query = sys.argv[1]
+    except IndexError:
+        query = prompt_bank["user_query"]
+
+    main(query, prompt_bank["sys_msg"])
