@@ -1,0 +1,58 @@
+.app {
+  display: flex;
+  flex-direction: column;
+  font-family: Arial, sans-serif;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background-color: #f4f4f4;
+  max-height: 50px;
+}
+
+.logo {
+  height: 150px; /* Adjust height as needed */
+  width: auto; /* Maintain aspect ratio */
+}
+
+.header nav a {
+  margin: 0 10px;
+  color: #333;
+  text-decoration: none;
+}
+
+.icon-button {
+  margin: 0 5px;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.main {
+  /*max-width: 10px; !* Set the maximum width for the entire layout *!*/
+  width: 70%;
+  margin: 0 auto; /* Center the layout horizontally */
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.content-container {
+  display: flex;
+  gap: 10px; /* Space between the chatbox and cart */
+}
+
+/* Set the chat section to 70% width */
+.char {
+  flex: 6;
+  padding: 20px;
+  border-right: 1px solid #ddd;;
+}
+
+/* Set the shopping cart section to 30% width */
+.scart {
+  flex: 3;
+  padding: 20px;
+}
