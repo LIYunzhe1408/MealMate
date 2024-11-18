@@ -1,33 +1,31 @@
-import React from "react";
+import React, { useState } from "react";
 import "./App.css";
 import ShoppingCart from "./components/ShoppingCart";
 import Chat from "./components/Chat";
-import logo from "./assets/name.png"
+import logo from "./assets/name.png";
 
 function App() {
+    const [cart, setCart] = useState([]); // Manage cart items
+
     return (
         <div className="app">
             <header className="header">
-
-                <img src={logo} alt="TJ Logo" className="logo" /> {/* Replace text with logo */}
+                <img src={logo} alt="TJ Logo" className="logo" />
                 <nav>
                     <a href="#shop">Shop</a>
                     <a href="#about">About</a>
-                    {/*<a href="#journal">Journal</a>*/}
                     <a href="#contact">Contact</a>
-                    {/*<button className="icon-button">🔍</button>*/}
-                    {/*<button className="icon-button">👤</button>*/}
-                    {/*<button className="icon-button">📧</button>*/}
                 </nav>
             </header>
             <main className="main">
-                <div className="char">
-                    <Chat />
+                <div className="content-container">
+                    <div className="char">
+                        <Chat setCart={setCart} cart={cart} />
+                    </div>
+                    <div className="scart">
+                        <ShoppingCart cart={cart} setCart={setCart} />
+                    </div>
                 </div>
-                <div className="scart">
-                    <ShoppingCart />
-                </div>
-
             </main>
         </div>
     );
