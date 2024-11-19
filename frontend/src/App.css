@@ -32,11 +32,16 @@
 }
 
 .main {
-  display: flex;
-  width: 100%;
-  margin: 0 auto;
+  /*max-width: 10px; !* Set the maximum width for the entire layout *!*/
+  width: 70%;
+  margin: 0 auto; /* Center the layout horizontally */
   padding: 20px;
   box-sizing: border-box;
+}
+
+.content-container {
+  display: flex;
+  gap: 10px; /* Space between the chatbox and cart */
 }
 
 /* Set the chat section to 70% width */
