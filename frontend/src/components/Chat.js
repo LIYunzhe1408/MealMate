@@ -12,6 +12,8 @@ function Chat({ setCart }) {
 
     // Ingredients with recommended and current quantities
     const [ingredients, setIngredients] = useState([]);
+    const [recipeSuggestions, setRecipeSuggestions] = useState([]);
+
     const predefinedIngredients = [
         {
             name: "Pasta",
@@ -96,47 +98,47 @@ function Chat({ setCart }) {
         },
     ];
 
-    const handleSend = () => {
-        if (inputValue.trim() !== "") {
-            setMessages([...messages, { sender: "customer", text: inputValue }]);
-
-            // Check if user requests a pasta recipe
-            if (inputValue.toLowerCase().includes("pasta with tomato sauce")) {
-                setIngredients(predefinedIngredients);
-                setShowCheckoutBox(true); // Show the message box for confirmation
-                setMessages((prevMessages) => [
-                    ...prevMessages,
-                    { sender: "assistant", text: "Please confirm the items in the message box." },
-                ]);
-                // // Combine ingredients into one message
-                // const ingredientList = predefinedIngredients
-                //     .map((item) =>
-                //         `${item.name}${item.unit ? ` - ${item.unit}` : ""} - $${item.price.toFixed(2)}`
-                //     )
-                //     .join("\n");
-                //
-                // setMessages((prevMessages) => [
-                //     ...prevMessages,
-                //     {
-                //         sender: "assistant",
-                //         text: `Here is your recipe and the ingredients:\n\n${ingredientList}`,
-                //     },
-                // ]);
-            } else if (inputValue.toLowerCase() === "add to cart") {
-                setShowCheckoutBox(true); // Show the message box for confirmation
-                setMessages((prevMessages) => [
-                    ...prevMessages,
-                    { sender: "assistant", text: "Please confirm the items in the message box." },
-                ]);
-            } else {
-                setMessages((prevMessages) => [
-                    ...prevMessages,
-                    { sender: "assistant", text: "How can I assist you further?" },
-                ]);
-            }
-            setInputValue("");
-        }
-    };
+    // const handleSend = () => {
+    //     if (inputValue.trim() !== "") {
+    //         setMessages([...messages, { sender: "customer", text: inputValue }]);
+    //
+    //         // Check if user requests a pasta recipe
+    //         if (inputValue.toLowerCase().includes("pasta with tomato sauce")) {
+    //             setIngredients(predefinedIngredients);
+    //             setShowCheckoutBox(true); // Show the message box for confirmation
+    //             setMessages((prevMessages) => [
+    //                 ...prevMessages,
+    //                 { sender: "assistant", text: "Please confirm the items in the message box." },
+    //             ]);
+    //             // // Combine ingredients into one message
+    //             // const ingredientList = predefinedIngredients
+    //             //     .map((item) =>
+    //             //         `${item.name}${item.unit ? ` - ${item.unit}` : ""} - $${item.price.toFixed(2)}`
+    //             //     )
+    //             //     .join("\n");
+    //             //
+    //             // setMessages((prevMessages) => [
+    //             //     ...prevMessages,
+    //             //     {
+    //             //         sender: "assistant",
+    //             //         text: `Here is your recipe and the ingredients:\n\n${ingredientList}`,
+    //             //     },
+    //             // ]);
+    //         } else if (inputValue.toLowerCase() === "add to cart") {
+    //             setShowCheckoutBox(true); // Show the message box for confirmation
+    //             setMessages((prevMessages) => [
+    //                 ...prevMessages,
+    //                 { sender: "assistant", text: "Please confirm the items in the message box." },
+    //             ]);
+    //         } else {
+    //             setMessages((prevMessages) => [
+    //                 ...prevMessages,
+    //                 { sender: "assistant", text: "How can I assist you further?" },
+    //             ]);
+    //         }
+    //         setInputValue("");
+    //     }
+    // };
 
     const updateQuantity = (index, delta) => {
         const updatedIngredients = [...ingredients];
@@ -172,8 +174,14 @@ function Chat({ setCart }) {
 
     const handleTestSend = async () => {
         if (inputValue.trim() !== "") {
+            // Add user's message to the chat
+            setMessages((prevMessages) => [
+                ...prevMessages,
+                { sender: "customer", text: inputValue },
+            ]);
+
             try {
-                const response = await fetch('http://localhost:5000/api/chat/message', {
+                const response = await fetch('http://localhost:5000/api/chat', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -181,13 +189,47 @@ function Chat({ setCart }) {
                     body: JSON.stringify({ message: inputValue }),
                 });
 
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
                 const data = await response.json();
-                console.log('Response from backend:', data);
+                console.log("Response from backend:", data);
+
+                if (data.type === "recipe") {
+                    // Add recipe suggestions to chat
+                    setRecipeSuggestions(data.recipe); // Update the state with suggestions
+
+                    const recipeTitles = data.recipe
+                        .map((recipe, index) => `${index + 1}. ${recipe.title}`)
+                        .join("\n");
+
+                    setMessages((prevMessages) => [
+                        ...prevMessages,
+                        { sender: "assistant", text: "Here are some recipes you might like:" },
+                        { sender: "assistant", text: recipeTitles },
+                    ]);
+                } else if (data.type === "general") {
+                    // Add general response to chat
+                    setMessages((prevMessages) => [
+                        ...prevMessages,
+                        { sender: "assistant", text: data.message },
+                    ]);
+                }
             } catch (error) {
-                console.error('Error:', error);
+                console.error("Error:", error);
+                setMessages((prevMessages) => [
+                    ...prevMessages,
+                    { sender: "assistant", text: "Sorry, I couldn't process your request. Please try again." },
+                ]);
             }
+
+            setInputValue(""); // Clear the input field
         }
     };
+
+
     return (
         <div className="chat">
             <h2>Chat with us</h2>
