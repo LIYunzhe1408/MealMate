@@ -170,6 +170,24 @@ function Chat({ setCart }) {
         ]);
     };
 
+    const handleTestSend = async () => {
+        if (inputValue.trim() !== "") {
+            try {
+                const response = await fetch('http://localhost:5000/api/chat/message', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: inputValue }),
+                });
+
+                const data = await response.json();
+                console.log('Response from backend:', data);
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+    };
     return (
         <div className="chat">
             <h2>Chat with us</h2>
@@ -196,7 +214,7 @@ function Chat({ setCart }) {
                 onChange={(e) => setInputValue(e.target.value)}
                 placeholder="Type your request, e.g., 'I want a pasta with tomato sauce'"
             />
-            <button className="send-button" onClick={handleSend}>
+            <button className="send-button" onClick={handleTestSend}>
                 Send
             </button>
 
