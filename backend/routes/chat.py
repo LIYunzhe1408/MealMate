@@ -1,31 +1,72 @@
+import logging
 from flask import Blueprint, request, jsonify
-from services.chef_service import get_recipe_suggestions
-# from services.line_cook_service import check_availability
 from services.chef_service import ChefService
+from services.intent_classifier import IntentClassifier
+# from transformers import pipeline
+import openai
+import os
+
+# Configure logging
+logging.getLogger("urllib3").setLevel(logging.WARNING)
+logging.getLogger("fsspec").setLevel(logging.WARNING)
+logging.getLogger("transformers").setLevel(logging.WARNING)
+logger = logging.getLogger(__name__)
+
 
 chat_bp = Blueprint('chat', __name__)
-chef_service = ChefService()
 
-@chat_bp.route('/message', methods=['POST'])
-def handle_message():
+# Initialize services
+chef_service = ChefService()
+intent_classifier = IntentClassifier()
+
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
+# lightweight model from huggingface, mighe be useful to replace the openai model
+# chat_model = pipeline("text-generation", model="")
+
+
+
+@chat_bp.route('/chat', methods=['POST'])
+def handle_chat():
+    logger.debug("Received request to /chat")
     data = request.json
-    user_message = data.get('message')
-    
-    try:
-        # Get recipe from Chef de Cuisine
-        recipe = get_recipe_suggestions(user_message)
+
+    try: 
+        user_message = data.get('message', '')
+        logger.debug(f"User message: {user_message}")
         
-        # Check availability with Line Cook
-        # available_ingredients = check_availability(recipe)
+        # Step 1: Classify intent
+        intent = intent_classifier.classify(user_message)
         
-        response = {
-            'recipe': recipe,
-            # 'available_ingredients': available_ingredients,
-            'message': "Here's what I found for you!"
-        }
-        
+        logger.debug(f"Intent: {intent}")
+        if intent == "recipe-related":
+            # Step 2: Get recipe suggestions for recipe-related queries
+            recipe = chef_service.get_recipe_suggestions(user_message)
+            response = {
+                'type': 'recipe',
+                'recipe': recipe,
+                'message': "Here are the top recipes matching your query!"
+            }
+        else:
+            # Step 3: Use OpenAI for non-recipe-related queries
+            completion = openai.ChatCompletion.create(
+                model="gpt-4o-mini",  # You can use "gpt-3.5-turbo" for cost efficiency
+                messages=[
+                    {"role": "system", "content": "You are a helpful assistant."},
+                    {"role": "user", "content": user_message}
+                ]
+            )
+            gpt_response = completion["choices"][0]["message"]["content"]
+            logger.debug(f"GPT-4 response: {gpt_response}")
+            response = {
+                'type': 'general',
+                'message': gpt_response
+            }
+        logging.debug(f"Response to frontend: {response}")
         return jsonify(response), 200
+
     except Exception as e:
+        logging.error(f"Error handling chat request: {str(e)}", exc_info=True)
         return jsonify({'error': str(e)}), 500
 
 @chat_bp.route('/suggest-recipes', methods=['POST'])
