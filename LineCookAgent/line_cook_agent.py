@@ -10,6 +10,7 @@ import csv
 OPENAI_API_KEY = os.getenv("OPEN_AI_API_KEY")
 openai.api_key = OPENAI_API_KEY
 openai.api_key = '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'
+embeddings_model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
 
 if not openai.api_key:
     raise ValueError("API key not found. Please set OPENAI_API_KEY environment variable or pass it directly.")
@@ -41,7 +42,7 @@ def LLM_find_best_match(closest_ingredients, specific_ingredient, recipe):
     Your job is to find out if any of the ingredients, {closest_ingredients} match the ingredient I am looking for: {specific_ingredient}. The ingredients do not have to match exacty,
     but it has to work in the recipe I provided. That means that synonyms or similar ingredients are also valid, as long as they work in the recipe. However, be careful and use your knowledge
     about food. Just because two ingredients have similar names, does not mean they work in the same recipe.
-    If one or more of the ingredients matches the ignredient I am looking for, output the ingredient that matches best. If none of the ingredients match, please write 'None'.
+    If one or more of the ingredients matches the ingredient I am looking for, output the ingredient that matches best. If none of the ingredients match, please write 'None'.
     Only output either the closest ingredient or 'None'."""
     best_match = get_llm_response(prompt)
     return best_match
@@ -115,34 +116,3 @@ def write_to_csv(best_matches, mapped_ingredients, output_file):
         for key in keys:
             writer.writerow([key, ', '.join(mapped_ingredients[key]), best_matches[key]])
 
-#Example usage:
-
-
-database = pd.read_csv('/Users/matswiigmartinussen/Documents/Berkeley/194/Project/Embedding_model/food.csv')
-database = database.sample(n=10000, random_state=42)
-grocery_names = database['description'].tolist()
-embeddings_model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
-grocery_products_embeddings = embeddings_model.encode(grocery_names)
-
-ingredients_bolognese = [
-    "2 tbsp olive oil",
-    "1 onion",
-    "1 carrot",
-    "1 celery stalk",
-    "2 garlic cloves",
-    "500g ground beef",
-    "400g canned chopped tomatoes",
-    "2 tbsp tomato paste",
-    "1/2 cup beef or vegetable stock",
-    "1/2 cup whole milk",
-    "1 tsp dried oregano",
-    "1 tsp dried basil",
-    "Salt and pepper",
-    "400g spaghetti",
-    "Grated Parmesan cheese",
-    "1/4 cup red wine"
-]
-recipe = {"Spaghetti Bolognese": ingredients_bolognese}
-
-best_matches, mapped_ingredients = search_for_ingreds(recipe, grocery_products_embeddings, grocery_names, 5)
-write_to_csv(best_matches, mapped_ingredients, 'testing.csv')

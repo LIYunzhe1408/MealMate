@@ -1,4 +1,4 @@
-import line_cook_agent
+from line_cook_agent import LLM_suggest_replacements
 ingredients_bolognese = [
     "2 tbsp olive oil",
     "1 medium onion",

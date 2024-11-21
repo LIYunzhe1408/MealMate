@@ -1,7 +1,13 @@
-from line_cook_agent import LLM_find_best_match, get_similarity_scores
+from line_cook_agent import search_for_ingreds, write_to_csv, LLM_suggest_replacements, LLM_remove_basic_ingredients, LLM_find_best_match, get_similarity_scores
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 import pandas as pd
+import openai
+import ast
+import os 
+import numpy as np
+import csv
+
 
 database = pd.read_csv('/Users/matswiigmartinussen/Documents/Berkeley/194/Project/MealMate/LineCookAgent/food.csv')
 database = database.sample(n=10000, random_state=42)
@@ -27,8 +33,7 @@ ingredients_bolognese = [
     "Grated Parmesan cheese",
     "1/4 cup red wine"
 ]
+recipe = {"Spaghetti Bolognese": ingredients_bolognese}
 
-for i, ingreident in enumerate(ingredients_bolognese):
-
-    similarity_scores = get_similarity_scores(ingreident, grocery_products_embeddings, 5, grocery_names)
-    print(f'Similarity scores for ingredient {ingreident} is {similarity_scores}')
+best_matches, mapped_ingredients = search_for_ingreds(recipe, grocery_products_embeddings, grocery_names, 5)
+write_to_csv(best_matches, mapped_ingredients, 'testing.csv')
