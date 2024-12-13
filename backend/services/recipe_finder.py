@@ -6,8 +6,13 @@ import os
 from typing import List, Dict
 
 class RecipeFinder:
-    def __init__(self, embeddings_path="data/recipe_embeddings.npy"):
-        self.embeddings_path = embeddings_path
+    def __init__(self):
+        self.embeddings_path = os.path.join(
+            os.path.dirname(os.path.dirname(__file__)),
+            "data",
+            "recipe_embeddings.npy"
+        )
+        #self.embeddings_path = embeddings_path
 
         # Load dataset
         print("Loading dataset...")
@@ -30,6 +35,7 @@ class RecipeFinder:
             print(f"Embeddings shape: {self.recipe_embeddings.shape}")
             print("Embeddings loaded.")
         else:
+            print("Problemo")
             print("Encoding recipes with progress...")
             self.recipe_embeddings = self._encode_with_progress()
             print("Recipes encoded. Saving embeddings...")
