@@ -235,8 +235,8 @@ function Chat({ setCart }) {
                         <div
                             className={`chat-bubble ${message.sender === "customer" ? "customer-bubble" : ""}`}
                         >
-                            {message.text &&
-                                message.text} {/* Display regular text messages */}
+                            {message.text && message.text}
+
                             {message.recipes && (
                                 <div className="recipe-cards">
                                     {message.recipes.map((recipe, idx) => (
@@ -244,11 +244,56 @@ function Chat({ setCart }) {
                                             <h4>{recipe.title}</h4>
                                             <p><strong>Ingredients:</strong> {recipe.ingredients}</p>
                                             <button
-                                                className="select-recipe-button"
-                                                onClick={() => console.log(`Selected Recipe: ${recipe.title}`)}
-                                            >
-                                                Select Recipe
-                                            </button>
+    className="select-recipe-button"
+    onClick={async () => {
+        try {
+            const selectedRecipe = {
+                recipe: {
+                    title: recipe.title,
+                    ingredients: Array.isArray(recipe.ingredients) ? recipe.ingredients : recipe.ingredients.split(";"),
+                },
+            };
+
+            console.log("Sending payload to backend:", selectedRecipe);
+
+            const response = await fetch('http://127.0.0.1:5000/api/line-cook', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(selectedRecipe),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(`HTTP error! Status: ${response.status}, Message: ${errorData.error}`);
+            }
+
+            const data = await response.json();
+            console.log("Backend response:", data);
+
+            // Add a success message to the chat
+            setMessages((prevMessages) => [
+                ...prevMessages,
+                {
+                    sender: "assistant",
+                    text: `The recipe "${data.recipe.title}" was saved successfully!`,
+                },
+            ]);
+        } catch (error) {
+            console.error("Error sending recipe to backend:", error);
+            setMessages((prevMessages) => [
+                ...prevMessages,
+                {
+                    sender: "assistant",
+                    text: `Sorry, there was an issue saving your recipe. Error: ${error.message}`,
+                },
+            ]);
+        }
+    }}
+>
+    Select Recipe
+</button>
                                         </div>
                                     ))}
                                 </div>

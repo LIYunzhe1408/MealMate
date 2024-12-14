@@ -2,6 +2,7 @@ import logging
 from flask import Blueprint, request, jsonify
 from services.chef_service import ChefService
 from services.intent_classifier import IntentClassifier
+from services.line_cook_service import LineCookService
 # from transformers import pipeline
 import openai
 import os
@@ -14,17 +15,19 @@ logger = logging.getLogger(__name__)
 
 
 chat_bp = Blueprint('chat', __name__)
+line_cook_bp = Blueprint('line_cook', __name__)
 
 # Initialize services
 chef_service = ChefService()
 intent_classifier = IntentClassifier()
 
+line_cook_service = LineCookService(database_path="/Users/emil/Library/Mobile Documents/com~apple~CloudDocs/Documents/projects/anything/sampled_food.csv")
+
+
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # lightweight model from huggingface, mighe be useful to replace the openai model
 # chat_model = pipeline("text-generation", model="")
-
-
 
 @chat_bp.route('/chat', methods=['POST'])
 def handle_chat():
@@ -42,6 +45,11 @@ def handle_chat():
         if intent == "recipe-related":
             # Step 2: Get recipe suggestions for recipe-related queries
             recipe = chef_service.get_recipe_suggestions(user_message)
+            print(" RECIPE!!!!!!!!!!!!!!!!!!! ", recipe)
+            chosen_recipe = {
+            recipe[0]['title']: recipe[0]['ingredients']
+        }
+            print(chosen_recipe)
             response = {
                 'type': 'recipe',
                 'recipe': recipe,
