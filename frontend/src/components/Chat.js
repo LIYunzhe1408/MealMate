@@ -279,19 +279,19 @@ function Chat({ setCart }) {
                     { sender: "assistant", text: "Here are the ingredients needed:" },
                     {
                         sender: "assistant",
-                        recipes: data.recipe, // Pass ingreds as part of the message
+                        ingredients: data.best_matches, // Pass ingreds as part of the message
                     },
                 ]);
             }
 
-            // Add a success message to the chat
-            setMessages((prevMessages) => [
-                ...prevMessages,
-                {
-                    sender: "assistant",
-                    text: `The recipe "${data.recipe.title}" was saved successfully!`,
-                },
-            ]);
+            // // Add a success message to the chat
+            // setMessages((prevMessages) => [
+            //     ...prevMessages,
+            //     {
+            //         sender: "assistant",
+            //         text: `The recipe "${data.recipe.title}" was saved successfully!`,
+            //     },
+            // ]);
         } catch (error) {
             console.error("Error sending recipe to backend:", error);
             setMessages((prevMessages) => [
@@ -310,6 +310,29 @@ function Chat({ setCart }) {
                                     ))}
                                 </div>
                             )}
+                            {/* Display Ingredients */}
+                    {/* {message.ingredients && (
+                        <div className="ingredients-list">
+                            <strong>Ingredients:</strong>
+                            <ul>
+                                {message.ingredients.map((ingredient, idx) => (
+                                    <li key={idx}>{ingredient}</li>
+                                ))}
+                            </ul>
+                        </div>
+                    )} */}
+                    {message.ingredients && (
+                        <div className="ingredients-list">
+                            <strong>Best Matches:</strong>
+                            <ul>
+                                {Object.entries(message.ingredients).map(([ingredient, match], idx) => (
+                                    <li key={idx}>
+                                        {ingredient}: {match}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
                         </div>
                         {message.sender === "customer" && (
                             <img src={customerAvatar} alt="Customer Avatar" className="chat-logo-customer" />
@@ -322,7 +345,7 @@ function Chat({ setCart }) {
                     type="text"
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
-                    placeholder="Type your request, e.g., 'I want a pasta with tomato sauce'"
+                    placeholder="Type your request, e.g., 'I want pasta with tomato sauce'"
                 />
                 <button className="send-button" onClick={handleTestSend}>
                     Send

@@ -15,7 +15,8 @@ logging.getLogger("transformers").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
 line_cook_bp = Blueprint('line_cook', __name__)
-openai.api_key = os.getenv("OPENAI_API_KEY")
+openai.api_key = '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'
+OPENAI_API_KEY = os.getenv("OPEN_AI_API_KEY")
 
 # Initialize LineCookService
 line_cook_service = LineCookService(database_path="/Users/emil/Library/Mobile Documents/com~apple~CloudDocs/Documents/projects/anything/sampled_food.csv")
@@ -60,18 +61,34 @@ def line_cook():
             json.dump(recipes, file, indent=4, ensure_ascii=False)
         
         # search_for_ingreds on the recipe
-        # best_matches, mapped_ingredients = line_cook_service.search_for_ingreds(recipe)
+        # Recipe = {'title': 'Homemade Pasta without a Pasta Machine', 'ingredients': ['2\u2009½ cups Italian-style tipo 00 flour, plus additional for dusting ', ' 3 large eggs ', ' 1 pinch salt ', ' 1 tablespoon water, or as needed']}
+        # split string on semicolon
+        # for key, value in recipe.items():
+        #     print("VALUE: ", value)
+        #     ingredients = [ingredient.strip() for ingredient in value.split(";")]  # Split by semicolon and strip whitespace
+        #     recipe[key] = ingredients  # Update the dictionary value with the list of ingredients
+
+
+
+        key = recipe['title']
+        value = recipe['ingredients']
+        recipe = {key: value}
+        print("RECIPEEEEEE: ", recipe)
+
+        best_matches, mapped_ingredients = line_cook_service.search_for_ingreds(recipe)
+
+        print("BEST MATCHES: ", best_matches), print("MAPPED INGREDIENTS: ", mapped_ingredients)
 
 
         # Return the response
-        # return jsonify({
-        #     "type": "ingredients",
-        #     "message": "Recipe saved successfully.",
-        #     "recipe": recipe,
-        #     "best_matches": best_matches,
-        #     "mapped_ingredients": mapped_ingredients
-        # }), 200
+        return jsonify({
+            "type": "ingredients",
+            "message": "Recipe saved successfully.",
+            "best_matches": best_matches,
+            "mapped_ingredients": mapped_ingredients
+        }), 200
         recipe = [recipe]
+        print("\n DATA: ", data, "  RECIPE: ", recipe)
 
 
         return jsonify({

@@ -36,6 +36,7 @@ class LineCookService:
         # if not openai.api_key:
         #     raise ValueError("API key not found. Please set OPENAI_API_KEY environment variable or pass it directly.")
         
+
         self.n_products = n_products
 
         # Load the database
@@ -48,7 +49,7 @@ class LineCookService:
 
 
     def get_llm_response(self, prompt: str) -> str:
-        completion = openai.ChatCompletion.create(
+        completion = openai.chat.completions.create(
             model="gpt-4o-mini",
             messages=[{"role": "user", "content": prompt}]
         )
