@@ -272,6 +272,18 @@ function Chat({ setCart }) {
             const data = await response.json();
             console.log("Backend response:", data);
 
+            if (data.type === "ingredients") {
+                // Add recipe cards to the chat
+                setMessages((prevMessages) => [
+                    ...prevMessages,
+                    { sender: "assistant", text: "Here are the ingredients needed:" },
+                    {
+                        sender: "assistant",
+                        recipes: data.recipe, // Pass ingreds as part of the message
+                    },
+                ]);
+            }
+
             // Add a success message to the chat
             setMessages((prevMessages) => [
                 ...prevMessages,

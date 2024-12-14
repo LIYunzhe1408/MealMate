@@ -54,7 +54,7 @@ class RecipeFinder:
             embeddings.append(self.model.encode(text))
         return np.array(embeddings)
 
-    def find_similar_recipes(self, query: str, k: int = 3) -> List[Dict]:
+    def find_similar_recipes(self, query: str, k: int = 1) -> List[Dict]:
         print(f"Query: {query}")  # Debug: Check the query
         query_embedding = self.model.encode(query)
         print(f"Query embedding: {query_embedding[:5]}...")  # Debug: Print a sample of the query embedding
