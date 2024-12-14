@@ -8,44 +8,44 @@ import numpy as np
 import csv
 from typing import Dict, List, Any
 
-# OPENAI_API_KEY = os.getenv("OPEN_AI_API_KEY")
-# openai.api_key = OPENAI_API_KEY
-# if not openai.api_key:
-#     raise ValueError("API key not found. Please set OPENAI_API_KEY environment variable or pass it directly.")
-# #openai.api_key = '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'
-
-
-
-# database = pd.read_csv('/Users/emil/Library/Mobile Documents/com~apple~CloudDocs/Documents/projects/anything/GroceryDataset.csv')
-# unique_sub_categories = database['Sub Category'].unique().tolist()
-# grocery_names = database['Title'].tolist()
-# embeddings_model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
-# grocery_products_embeddings = embeddings_model.encode(grocery_names)
-
-
-
-# database = pd.read_csv('sampled_food.csv')
-# grocery_names = database['description'].tolist()
-# embeddings_model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
-# grocery_products_embeddings = embeddings_model.encode(grocery_names)
-
 class LineCookService:
     def __init__(self, database_path: str, embeddings_model_name: str = 'paraphrase-MiniLM-L6-v2', n_products: int = 5):
-        # self.OPENAI_API_KEY = os.getenv("OPEN_AI_API_KEY")
-        # openai.api_key = self.OPENAI_API_KEY
-        # if not openai.api_key:
-        #     raise ValueError("API key not found. Please set OPENAI_API_KEY environment variable or pass it directly.")
         
-
         self.n_products = n_products
+        self.embeddings_path = os.path.join(
+            os.path.dirname(database_path),
+            "grocery_embeddings.npy"
+        )
+        self.database_path = database_path
 
         # Load the database
         self.database = pd.read_csv(database_path)
         self.grocery_names = self.database['description'].tolist()
 
         # Load embeddings model
+        print("Loading embeddings model...")
         self.embeddings_model = SentenceTransformer(embeddings_model_name)
-        self.grocery_products_embeddings = self.embeddings_model.encode(self.grocery_names)
+        print("Model loaded.")
+
+        # Load or create embeddings
+        self.grocery_products_embeddings = self._load_or_create_embeddings()
+
+    def _load_or_create_embeddings(self):
+        """
+        Loads embeddings from a .npy file or creates and saves them if not found.
+        """
+        if os.path.exists(self.embeddings_path):
+            print("Loading precomputed embeddings...")
+            embeddings = np.load(self.embeddings_path)
+            print(f"Embeddings shape: {embeddings.shape}")
+            return embeddings
+        else:
+            print("No precomputed embeddings found. Creating embeddings...")
+            embeddings = self.embeddings_model.encode(self.grocery_names, show_progress_bar=True)
+            os.makedirs(os.path.dirname(self.embeddings_path), exist_ok=True)
+            np.save(self.embeddings_path, embeddings)
+            print(f"Embeddings saved to {self.embeddings_path}")
+            return embeddings
 
 
     def get_llm_response(self, prompt: str) -> str:

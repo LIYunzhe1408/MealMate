@@ -15,14 +15,10 @@ logger = logging.getLogger(__name__)
 
 
 chat_bp = Blueprint('chat', __name__)
-line_cook_bp = Blueprint('line_cook', __name__)
 
 # Initialize services
 chef_service = ChefService()
 intent_classifier = IntentClassifier()
-
-line_cook_service = LineCookService(database_path="/Users/emil/Library/Mobile Documents/com~apple~CloudDocs/Documents/projects/anything/sampled_food.csv")
-
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
@@ -45,7 +41,7 @@ def handle_chat():
         if intent == "recipe-related":
             # Step 2: Get recipe suggestions for recipe-related queries
             recipe = chef_service.get_recipe_suggestions(user_message)
-            print(" RECIPE!!!!!!!!!!!!!!!!!!! ", recipe)
+            # print(" RECIPE!!!!!!!!!!!!!!!!!!! ", recipe)
             chosen_recipe = {
             recipe[0]['title']: recipe[0]['ingredients']
         }
