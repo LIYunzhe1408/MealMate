@@ -1,98 +1,28 @@
-from line_cook_agent import LLM_suggest_replacements
-ingredients_bolognese = [
-    "2 tbsp olive oil",
-    "1 medium onion",
-    "1 medium carrot",
-    "1 celery stalk",
-    "2 garlic cloves",
-    "500g ground beef",
-    "400g canned chopped tomatoes",
-    "2 tbsp tomato paste",
-    "1/2 cup beef or vegetable stock",
-    "1/2 cup whole milk",
-    "1 tsp dried oregano",
-    "1 tsp dried basil",
-    "Salt and pepper",
-    "400g spaghetti",
-    "Grated Parmesan cheese",
-    "1/4 cup red wine"
-]
+# This is testing part 3, where I test the replacement function. The replacement function receives one unavailable ingredient together with the recipe, 
+# and should decide wether it is ok to just remove the ingredient from the recipe or if we need to remove the whole dish and replace it with something else 
+# (if the ingredient is important)
 
-ingredients_pizza = [
-    "500g all-purpose flour",
-    "1 tsp salt",
-    "1 tsp sugar",
-    "1 packet (7g) instant yeast",
-    "3 tbsp olive oil",
-    "300ml warm water",
-    "200ml tomato sauce",
-    "200g shredded mozzarella cheese",
-    "100g sliced pepperoni",
-    "1 tsp dried oregano",
-    "1 tsp dried basil",
-    "1 red bell pepper, sliced",
-    "1 small onion, thinly sliced",
-    "1 handful fresh basil leaves"
-]
+
+from line_cook_agent import LLM_suggest_replacements
+from testing_part3_data import recipes, test_cases_replacements
 
 test_score = 0
-recipe = {"Spaghetti Bolognese": ingredients_bolognese}
-replacement_test = LLM_suggest_replacements(recipe, ingredients_bolognese[2])
-if replacement_test == 'Remove ingredient.':
-    print('Test passed')
-    test_score += 1
-else:
-    print('Test failed')
+total_tests = len(test_cases_replacements)
 
-replacement_test = LLM_suggest_replacements(recipe, ingredients_bolognese[-2])
-if replacement_test == 'Remove ingredient.':
-    print('Test passed')
-    test_score += 1
-else:
-    print('Test failed')
+for test_case in test_cases_replacements:
+    recipe_name = test_case["recipe_name"]
+    unavailable_ingredient = test_case["unavailable_ingredient"]
+    expected = test_case["expected"]
 
-replacement_test = LLM_suggest_replacements(recipe, ingredients_bolognese[5])
-if replacement_test == 'Remove dish.':
-    print('Test passed')
-    test_score += 1
-else:
-    print('Test failed')
+    # Create a single-recipe dict for the function call
+    recipe_dict = {recipe_name: recipes[recipe_name]}
 
-replacement_test = LLM_suggest_replacements(recipe, ingredients_bolognese[6])
-if replacement_test == 'Remove dish.':
-    print('Test passed')
-    test_score += 1
-else:
-    print('Test failed')
+    # Perform the test
+    replacement_test = LLM_suggest_replacements(recipe_dict, unavailable_ingredient)
+    if replacement_test.lower() == expected.lower():
+        print(f"Test passed: {unavailable_ingredient} -> {replacement_test}")
+        test_score += 1
+    else:
+        print(f"Test failed: {unavailable_ingredient} -> {replacement_test}, expected {expected}")
 
-recipe = {"Spaghetti Bolognese": ingredients_pizza}
-replacement_test = LLM_suggest_replacements(recipe, ingredients_pizza[8])
-if replacement_test == 'Remove ingredient.':
-    print('Test passed')
-    test_score += 1
-else:
-    print('Test failed')
-
-replacement_test = LLM_suggest_replacements(recipe, ingredients_pizza[-2])
-if replacement_test == 'Remove ingredient.':
-    print('Test passed')
-    test_score += 1
-else:
-    print('Test failed')
-
-replacement_test = LLM_suggest_replacements(recipe, ingredients_pizza[0])
-if replacement_test == 'Remove dish.':
-    print('Test passed')
-    test_score += 1
-else:
-    print('Test failed')
-
-replacement_test = LLM_suggest_replacements(recipe, ingredients_pizza[7])
-if replacement_test == 'Remove dish.':
-    print('Test passed')
-    test_score += 1
-else:
-    print('Test failed')
-
-
-print("The model scored: ", test_score, " out of 8")
+print("The model scored: ", test_score, " out of ", total_tests)

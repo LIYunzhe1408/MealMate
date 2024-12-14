@@ -1,2 +1,5 @@
 .idea/
 .cache/LineCookAgent/food.csv
+line_cook_env/
+__pycache__/
+*.pyc
