@@ -25,8 +25,15 @@ logger = logging.getLogger(__name__)
 line_cook_bp = Blueprint('line_cook', __name__)
 # OPENAI_API_KEY = os.getenv("OPEN_AI_API_KEY")
 
+# Assuming this code is in `services/line_cook_service.py`
+file_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'sampled_food.csv')
+
+# Resolve the path to its absolute form for clarity (optional, for debugging purposes)
+absolute_path = os.path.abspath(file_path)
+print(f"Resolved file path: {absolute_path}")
+
 # Initialize LineCookService
-line_cook_service = LineCookService(database_path="/Users/emil/Library/Mobile Documents/com~apple~CloudDocs/Documents/projects/anything/sampled_food.csv")
+line_cook_service = LineCookService(database_path=absolute_path)
 
 @line_cook_bp.route('/line-cook', methods=['POST'])
 def line_cook():
