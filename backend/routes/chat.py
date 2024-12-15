@@ -53,14 +53,14 @@ def handle_chat():
             }
         else:
             # Step 3: Use OpenAI for non-recipe-related queries
-            completion = openai.ChatCompletion.create(
+            completion = openai.chat.completions.create(
                 model="gpt-4o-mini",  # You can use "gpt-3.5-turbo" for cost efficiency
                 messages=[
                     {"role": "system", "content": "You are a helpful assistant."},
                     {"role": "user", "content": user_message}
                 ]
             )
-            gpt_response = completion["choices"][0]["message"]["content"]
+            gpt_response = completion.choices[0].message.content
             logger.debug(f"GPT-4 response: {gpt_response}")
             response = {
                 'type': 'general',

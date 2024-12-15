@@ -51,6 +51,16 @@ def line_cook():
         # print("RECIPEEEEEE: ", recipe)
 
         best_matches, mapped_ingredients = line_cook_service.search_for_ingreds(recipe)
+        # If 'None, remove dish' in best_matches, scrap the rest of this method and return not possible dish
+        if 'None, remove dish' in best_matches.values():
+            # Find the specific ingredients marked with 'None, remove dish'
+            problematic_ingredients = [ingredient for ingredient, status in best_matches.items() if status == 'None, remove dish']
+            
+            return jsonify({
+                "type": "general",
+                "message": "Recipe not possible. Please remove the dish.",
+                "problematic_ingredients": problematic_ingredients  # Include the problematic ingredients in the response
+            }), 200
 
         print("BEST MATCHES: ", best_matches), print("MAPPED INGREDIENTS: ", mapped_ingredients)
 

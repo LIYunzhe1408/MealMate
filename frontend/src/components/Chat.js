@@ -288,6 +288,12 @@ function Chat({ setCart }) {
                         ingredients: data.best_matches, // Pass ingreds as part of the message
                     },
                 ]);
+            } else {
+                setMessages((prevMessages) => [
+                    ...prevMessages,
+                    { sender: "assistant", text: "Recipe not possible because of \n  missing ingredient: \n" + data.problematic_ingredients },
+                    {sender: "assistant", text: "Please choose one of the other dishes or ask for something else"}
+                ]);
             }
         } catch (error) {
             console.error("Error sending recipe to backend:", error);
