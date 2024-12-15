@@ -2,9 +2,24 @@
 # and should decide wether it is ok to just remove the ingredient from the recipe or if we need to remove the whole dish and replace it with something else 
 # (if the ingredient is important)
 
+import sys
+import os
 
-from line_cook_agent import LLM_suggest_replacements
-from testing_part3_data import recipes, test_cases_replacements
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from backend.services.line_cook_service import LineCookService
+from evaluation.line_cook_testing_part3_data import recipes, test_cases_replacements
+
+
+# Assuming this code is in `services/line_cook_service.py`
+file_path = os.path.join(os.path.dirname(
+    __file__), '..', 'backend', 'data', 'sampled_food.csv')
+# Resolve the path to its absolute form for clarity (optional, for debugging purposes)
+absolute_path = os.path.abspath(file_path)
+print(f"Resolved file path: {absolute_path}")
+
+# Initialize LineCookService
+line_cook_service = LineCookService(database_path=absolute_path)
 
 test_score = 0
 total_tests = len(test_cases_replacements)
@@ -18,7 +33,7 @@ for test_case in test_cases_replacements:
     recipe_dict = {recipe_name: recipes[recipe_name]}
 
     # Perform the test
-    replacement_test = LLM_suggest_replacements(recipe_dict, unavailable_ingredient)
+    replacement_test = line_cook_service.LLM_suggest_replacements(recipe_dict, unavailable_ingredient)
     if replacement_test.lower() == expected.lower():
         print(f"Test passed: {unavailable_ingredient} -> {replacement_test}")
         test_score += 1
