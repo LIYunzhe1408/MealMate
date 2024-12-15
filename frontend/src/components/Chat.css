@@ -135,3 +135,11 @@ input[type="text"] {
 .select-recipe-button:hover {
     background-color: #218838;
 }
+
+.select-recipe-button.clicked {
+    background-color: #ffc107; /* Change background to yellow */
+    color: black; /* Optional: Change text color */
+    transform: scale(1.005); /* Slightly enlarge the button */
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3); /* Add a more prominent shadow */
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}

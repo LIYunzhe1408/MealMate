@@ -59,6 +59,7 @@ def line_cook():
         return jsonify({
             "type": "ingredients",
             "message": "Recipe saved successfully.",
+            "title": key,
             "best_matches": best_matches,
             "mapped_ingredients": mapped_ingredients
         }), 200

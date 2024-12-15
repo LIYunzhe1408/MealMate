@@ -8,6 +8,7 @@ function Chat({ setCart }) {
         { sender: "assistant", text: "Hello! I'm your virtual assistant. How can I help you today?" },
     ]);
     const [inputValue, setInputValue] = useState("");
+    const [clickedRecipe, setClickedRecipe] = useState(null);
     const [showCheckoutBox, setShowCheckoutBox] = useState(false);
 
     // Ingredients with recommended and current quantities
@@ -244,9 +245,10 @@ function Chat({ setCart }) {
                                             <h4>{recipe.title}</h4>
                                             <p><strong>Ingredients:</strong> {recipe.ingredients}</p>
                                             <button
-    className="select-recipe-button"
+    className={`select-recipe-button ${clickedRecipe === recipe.title ? "clicked" : ""}`}
     onClick={async () => {
         try {
+            setClickedRecipe(recipe.title);
             const selectedRecipe = {
                 recipe: {
                     title: recipe.title,
@@ -276,22 +278,17 @@ function Chat({ setCart }) {
                 // Add recipe cards to the chat
                 setMessages((prevMessages) => [
                     ...prevMessages,
-                    { sender: "assistant", text: "Here are the ingredients needed:" },
+                    { sender: "assistant", text: (
+                        <>
+                            Here are the ingredients needed for <strong>{data.title}</strong>:
+                        </>
+                    )  },
                     {
                         sender: "assistant",
                         ingredients: data.best_matches, // Pass ingreds as part of the message
                     },
                 ]);
             }
-
-            // // Add a success message to the chat
-            // setMessages((prevMessages) => [
-            //     ...prevMessages,
-            //     {
-            //         sender: "assistant",
-            //         text: `The recipe "${data.recipe.title}" was saved successfully!`,
-            //     },
-            // ]);
         } catch (error) {
             console.error("Error sending recipe to backend:", error);
             setMessages((prevMessages) => [
@@ -304,7 +301,7 @@ function Chat({ setCart }) {
         }
     }}
 >
-    Select Recipe
+{clickedRecipe === recipe.title ? "Selected Recipe" : "Select Recipe"}
 </button>
                                         </div>
                                     ))}
@@ -323,7 +320,6 @@ function Chat({ setCart }) {
                     )} */}
                     {message.ingredients && (
                         <div className="ingredients-list">
-                            <strong>Best Matches:</strong>
                             <ul>
                                 {Object.entries(message.ingredients).map(([ingredient, match], idx) => (
                                     <li key={idx}>
