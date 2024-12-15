@@ -9,7 +9,7 @@ import csv
 from typing import Dict, List, Any
 
 class LineCookService:
-    def __init__(self, database_paths: str, embeddings_model_name: str = 'paraphrase-MiniLM-L6-v2', n_products: int = 5):
+    def __init__(self, database_paths: str, embeddings_model_name: str = 'paraphrase-MiniLM-L6-v2', n_products: int = 10):
         
         self.n_products = n_products
         self.embeddings_paths = [os.path.join(
