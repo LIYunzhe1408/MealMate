@@ -9,19 +9,37 @@ import csv
 from typing import Dict, List, Any
 
 class LineCookService:
-    def __init__(self, database_path: str, embeddings_model_name: str = 'paraphrase-MiniLM-L6-v2', n_products: int = 5):
+    def __init__(self, database_paths: str, embeddings_model_name: str = 'paraphrase-MiniLM-L6-v2', n_products: int = 5):
         
         self.n_products = n_products
-        self.embeddings_path = os.path.join(
-            os.path.dirname(database_path),
-            "grocery_embeddings.npy"
-        )
-        self.database_path = database_path
-
+        self.embeddings_paths = [os.path.join(
+            os.path.dirname(database_paths[0]),
+            "grocery_embeddings_safeway.npy"
+        ),
+        os.path.join(
+            os.path.dirname(database_paths[1]),
+            "grocery_embeddings_target.npy"
+        ),
+        os.path.join(
+            os.path.dirname(database_paths[2]),
+            "grocery_embeddings_trader_joes.npy"
+        ),
+        os.path.join(
+            os.path.dirname(database_paths[3]),
+            "grocery_embeddings_walmart.npy"
+        ),
+        os.path.join(
+            os.path.dirname(database_paths[4]),
+            "grocery_embeddings_whole_foodst.npy"
+        ),
+        ]
+        
+        self.database_paths = database_paths
+        print(f"Database paths: {database_paths}")
         # Load the database
-        self.database = pd.read_csv(database_path)
-        self.grocery_names = self.database['description'].tolist()
-
+        self.database = [pd.read_csv(database_paths[0]), pd.read_csv(database_paths[1]), pd.read_csv(database_paths[2]), pd.read_csv(database_paths[3]), pd.read_csv(database_paths[4])]
+        self.grocery_names = [self.database[0]['PRODUCT_NAME'].tolist(), self.database[1]['PRODUCT_NAME'].tolist(), self.database[2]['PRODUCT_NAME'].tolist(), self.database[3]['PRODUCT_NAME'].tolist(), self.database[4]['PRODUCT_NAME'].tolist()]
+        self.grocery_prices = [self.database[0]['PRICE_CURRENT'].tolist(), self.database[1]['PRICE_CURRENT'].tolist(), self.database[2]['PRICE_CURRENT'].tolist(), self.database[3]['PRICE_CURRENT'].tolist(), self.database[4]['PRICE_CURRENT'].tolist()]
         # Load embeddings model
         print("Loading embeddings model...")
         self.embeddings_model = SentenceTransformer(embeddings_model_name)
@@ -34,17 +52,19 @@ class LineCookService:
         """
         Loads embeddings from a .npy file or creates and saves them if not found.
         """
-        if os.path.exists(self.embeddings_path):
+        if os.path.exists(self.embeddings_paths[0]) & os.path.exists(self.embeddings_paths[1]) & os.path.exists(self.embeddings_paths[2]) & os.path.exists(self.embeddings_paths[3]) & os.path.exists(self.embeddings_paths[4]):
             print("Loading precomputed embeddings...")
-            embeddings = np.load(self.embeddings_path)
-            print(f"Embeddings shape: {embeddings.shape}")
+            embeddings = [np.load(self.embeddings_paths[0]), np.load(self.embeddings_paths[1]), np.load(self.embeddings_paths[2]), np.load(self.embeddings_paths[3]), np.load(self.embeddings_paths[4])]
+            print(f"Embeddings shape: {embeddings[0].shape}")
             return embeddings
         else:
             print("No precomputed embeddings found. Creating embeddings...")
-            embeddings = self.embeddings_model.encode(self.grocery_names, show_progress_bar=True)
-            os.makedirs(os.path.dirname(self.embeddings_path), exist_ok=True)
-            np.save(self.embeddings_path, embeddings)
-            print(f"Embeddings saved to {self.embeddings_path}")
+            embeddings = [self.embeddings_model.encode(self.grocery_names[0], show_progress_bar=True), self.embeddings_model.encode(self.grocery_names[1], show_progress_bar=True), self.embeddings_model.encode(self.grocery_names[2], show_progress_bar=True), self.embeddings_model.encode(self.grocery_names[3], show_progress_bar=True), self.embeddings_model.encode(self.grocery_names[4], show_progress_bar=True)]
+            for i in range(5):
+                os.makedirs(os.path.dirname(self.embeddings_paths[i]), exist_ok=True)
+                np.save(self.embeddings_paths[i], embeddings[i])
+                print(f"Embeddings saved to {self.embeddings_paths[i]}")
+
             return embeddings
 
 
@@ -55,13 +75,12 @@ class LineCookService:
         )
         return completion.choices[0].message.content
     
-    def get_similarity_scores(self, general_ingredient: str, n: int = None) -> pd.DataFrame:
+    def get_similarity_scores(self, general_ingredient: str, store_num: int, n: int = None) -> pd.DataFrame:
         if n is None:
             n = self.n_products
         general_ingredient_embedding = self.embeddings_model.encode(general_ingredient).reshape(1, -1)
-        similarity_scores = cosine_similarity(self.grocery_products_embeddings, general_ingredient_embedding).flatten()
-
-        similarity_df = pd.DataFrame({'Category Name': self.grocery_names, 'Similarity Score': similarity_scores})
+        similarity_scores = cosine_similarity(self.grocery_products_embeddings[store_num], general_ingredient_embedding).flatten()
+        similarity_df = pd.DataFrame({'Category Name': self.grocery_names[store_num], 'Prices' : self.grocery_prices[store_num], 'Similarity Score': similarity_scores})
         similarity_df = similarity_df.sort_values(by='Similarity Score', ascending=False)
         return similarity_df.head(n)
     
@@ -99,7 +118,7 @@ class LineCookService:
         return replacements
     
 
-    def search_for_ingreds(self, recipe: Dict[str, List[str]]):
+    def search_for_ingreds(self, recipe: Dict[str, List[str]], store_num: int):
         remove_dish = False
         filtered_recipe = self.LLM_remove_basic_ingredients(recipe)
 
@@ -109,6 +128,7 @@ class LineCookService:
 
         best_matches = {}
         mapped_ingredients = {}
+        prices_best_matches = {}
 
         # Mark basic ingredients
         for ingredient in basic_ingreds:
@@ -117,10 +137,12 @@ class LineCookService:
 
         filtered_ingredients_list = list(filtered_recipe.values())[0] 
         for ingredient in filtered_ingredients_list:
-            similarity_scores = self.get_similarity_scores(ingredient, self.n_products)
+            similarity_scores = self.get_similarity_scores(ingredient, store_num, self.n_products)
             mapped_ingredients[ingredient] = similarity_scores["Category Name"].tolist()
+            prices_mapped_ingredients = similarity_scores["Prices"].tolist()
             best_match = self.LLM_find_best_match(similarity_scores["Category Name"].tolist(), ingredient, recipe)
             best_matches[ingredient] = best_match
+
 
         # Handle 'None' matches
         keys = list(best_matches.keys())
