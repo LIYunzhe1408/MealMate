@@ -2,10 +2,10 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    height: 100vh; /* Full viewport height */
+    height: 80vh; /* Full viewport height */
     font-family: Arial, sans-serif;
-    background-color: #f8f9fa;
-    padding: 20px;
+    background-color: white;
+    /*padding: 10px;*/
 }
 
 .chat-messages {
@@ -15,12 +15,12 @@
     margin-bottom: 10px;
     background: white;
     border-radius: 8px;
-    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    /*box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);*/
 }
 
 .chat-message-container {
     display: flex;
-    align-items: center;
+    /*align-items: center;*/
     margin-bottom: 10px;
 }
 
@@ -40,50 +40,55 @@
 }
 
 .chat-bubble {
-    background-color: #f4f4f4;
+    background-color: #ffffff;
     padding: 10px;
     border-radius: 8px;
     max-width: 70%;
-    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    /*box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);*/
 }
 
 .customer-bubble {
-    background-color: #007bff;
-    color: white;
+    background-color: #f4f4f4;
+    color: black;
     align-self: flex-end;
     margin-left: auto;
 }
 
 .chat-input-container {
     display: flex;
-    align-items: center;
-    padding-top: 10px;
-    background: white;
+    flex-direction: column;
+    align-items: stretch;
+    /*padding-top: 10px;*/
+    background: #f4f4f4;
     border-radius: 8px;
-    box-shadow: 0px -2px 5px rgba(0, 0, 0, 0.1);
+    /*box-shadow: 0px -2px 5px rgba(0, 0, 0, 0.1);*/
 }
 
 input[type="text"] {
     flex: 1;
     padding: 10px;
-    border: 1px solid #ddd;
+    border: 0px solid #ddd;
     border-radius: 4px;
     margin-right: 10px;
-    box-shadow: inset 0px 2px 5px rgba(0, 0, 0, 0.1);
+    outline: none;
+    /*box-shadow: inset 0px 2px 5px rgba(0, 0, 0, 0.1);*/
 }
 
 .send-button {
     padding: 10px 20px;
-    background-color: #007bff;
+    background-color: black;
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+    margin-left: auto;
+    margin-right: 10px;
 }
 
 .send-button:hover {
-    background-color: #0056b3;
+    /*background-color: #f4f4f4;*/
+    opacity: 60%;
 }
 
 /* Recipe Cards */

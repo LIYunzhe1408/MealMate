@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "./Chat.css";
-import assistantLogo from "../assets/trader-joes-logo.png";
+import assistantLogo from "../assets/MealMate-chat-logo.png";
 import customerAvatar from "../assets/customer.jpg";
 
 function Chat({ setCart }) {
@@ -98,47 +98,33 @@ function Chat({ setCart }) {
         },
     ];
 
-    // const handleSend = () => {
-    //     if (inputValue.trim() !== "") {
-    //         setMessages([...messages, { sender: "customer", text: inputValue }]);
-    //
-    //         // Check if user requests a pasta recipe
-    //         if (inputValue.toLowerCase().includes("pasta with tomato sauce")) {
-    //             setIngredients(predefinedIngredients);
-    //             setShowCheckoutBox(true); // Show the message box for confirmation
-    //             setMessages((prevMessages) => [
-    //                 ...prevMessages,
-    //                 { sender: "assistant", text: "Please confirm the items in the message box." },
-    //             ]);
-    //             // // Combine ingredients into one message
-    //             // const ingredientList = predefinedIngredients
-    //             //     .map((item) =>
-    //             //         `${item.name}${item.unit ? ` - ${item.unit}` : ""} - $${item.price.toFixed(2)}`
-    //             //     )
-    //             //     .join("\n");
-    //             //
-    //             // setMessages((prevMessages) => [
-    //             //     ...prevMessages,
-    //             //     {
-    //             //         sender: "assistant",
-    //             //         text: `Here is your recipe and the ingredients:\n\n${ingredientList}`,
-    //             //     },
-    //             // ]);
-    //         } else if (inputValue.toLowerCase() === "add to cart") {
-    //             setShowCheckoutBox(true); // Show the message box for confirmation
-    //             setMessages((prevMessages) => [
-    //                 ...prevMessages,
-    //                 { sender: "assistant", text: "Please confirm the items in the message box." },
-    //             ]);
-    //         } else {
-    //             setMessages((prevMessages) => [
-    //                 ...prevMessages,
-    //                 { sender: "assistant", text: "How can I assist you further?" },
-    //             ]);
-    //         }
-    //         setInputValue("");
-    //     }
-    // };
+    const handleSend = () => {
+        if (inputValue.trim() !== "") {
+            setMessages([...messages, { sender: "customer", text: inputValue }]);
+
+            // Check if user requests a pasta recipe
+            if (inputValue.toLowerCase().includes("pasta with tomato sauce")) {
+                setIngredients(predefinedIngredients);
+                setShowCheckoutBox(true); // Show the message box for confirmation
+                setMessages((prevMessages) => [
+                    ...prevMessages,
+                    { sender: "assistant", text: "Please confirm the items in the message box." },
+                ]);
+            } else if (inputValue.toLowerCase() === "add to cart") {
+                setShowCheckoutBox(true); // Show the message box for confirmation
+                setMessages((prevMessages) => [
+                    ...prevMessages,
+                    { sender: "assistant", text: "Please confirm the items in the message box." },
+                ]);
+            } else {
+                setMessages((prevMessages) => [
+                    ...prevMessages,
+                    { sender: "assistant", text: "How can I assist you further?" },
+                ]);
+            }
+            setInputValue("");
+        }
+    };
 
     const updateQuantity = (index, delta) => {
         const updatedIngredients = [...ingredients];
@@ -225,7 +211,7 @@ function Chat({ setCart }) {
 
     return (
         <div className="chat">
-            <h2>Chat with us</h2>
+            {/*<h2>Chat with us</h2>*/}
             <div className="chat-messages">
                 {messages.map((message, index) => (
                     <div key={index} className="chat-message-container">
@@ -237,6 +223,7 @@ function Chat({ setCart }) {
                         >
                             {message.text && message.text}
 
+
                             {message.recipes && (
                                 <div className="recipe-cards">
                                     {message.recipes.map((recipe, idx) => (
@@ -244,113 +231,175 @@ function Chat({ setCart }) {
                                             <h4>{recipe.title}</h4>
                                             <p><strong>Ingredients:</strong> {recipe.ingredients}</p>
                                             <button
-    className="select-recipe-button"
-    onClick={async () => {
-        try {
-            const selectedRecipe = {
-                recipe: {
-                    title: recipe.title,
-                    ingredients: Array.isArray(recipe.ingredients) ? recipe.ingredients : recipe.ingredients.split(";"),
-                },
-            };
+                                                className="select-recipe-button"
+                                                onClick={async () => {
+                                                    try {
+                                                        const selectedRecipe = {
+                                                            recipe: {
+                                                                title: recipe.title,
+                                                                ingredients: Array.isArray(recipe.ingredients) ? recipe.ingredients : recipe.ingredients.split(";"),
+                                                            },
+                                                        };
 
-            console.log("Sending payload to backend:", selectedRecipe);
+                                                        console.log("Sending payload to backend:", selectedRecipe);
 
-            const response = await fetch('http://127.0.0.1:5000/api/line-cook', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(selectedRecipe),
-            });
+                                                        const response = await fetch('http://127.0.0.1:5000/api/line-cook', {
+                                                            method: 'POST',
+                                                            headers: {
+                                                                'Content-Type': 'application/json',
+                                                            },
+                                                            body: JSON.stringify(selectedRecipe),
+                                                        });
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(`HTTP error! Status: ${response.status}, Message: ${errorData.error}`);
-            }
+                                                        if (!response.ok) {
+                                                            const errorData = await response.json();
+                                                            throw new Error(`HTTP error! Status: ${response.status}, Message: ${errorData.error}`);
+                                                        }
 
-            const data = await response.json();
-            console.log("Backend response:", data);
+                                                        const data = await response.json();
+                                                        console.log("Backend response:", data);
 
-            if (data.type === "ingredients") {
-                // Add recipe cards to the chat
-                setMessages((prevMessages) => [
-                    ...prevMessages,
-                    { sender: "assistant", text: "Here are the ingredients needed:" },
-                    {
-                        sender: "assistant",
-                        ingredients: data.best_matches, // Pass ingreds as part of the message
-                    },
-                ]);
-            }
 
-            // // Add a success message to the chat
-            // setMessages((prevMessages) => [
-            //     ...prevMessages,
-            //     {
-            //         sender: "assistant",
-            //         text: `The recipe "${data.recipe.title}" was saved successfully!`,
-            //     },
-            // ]);
-        } catch (error) {
-            console.error("Error sending recipe to backend:", error);
-            setMessages((prevMessages) => [
-                ...prevMessages,
-                {
-                    sender: "assistant",
-                    text: `Sorry, there was an issue saving your recipe. Error: ${error.message}`,
-                },
-            ]);
-        }
-    }}
->
-    Select Recipe
-</button>
+                                                        setIngredients(predefinedIngredients);
+                                                        setShowCheckoutBox(true);
+
+
+                                                        if (data.type === "ingredients") {
+                                                            // Add recipe cards to the chat
+                                                            setMessages((prevMessages) => [
+                                                                ...prevMessages,
+                                                                { sender: "assistant", text: "Here are the ingredients needed:" },
+                                                                {
+                                                                    sender: "assistant",
+                                                                    ingredients: data.best_matches, // Pass ingreds as part of the message
+                                                                },
+                                                            ]);
+                                                        }
+                                                    } catch (error) {
+                                                        console.error("Error sending recipe to backend:", error);
+                                                        setMessages((prevMessages) => [
+                                                            ...prevMessages,
+                                                            {
+                                                                sender: "assistant",
+                                                                text: `Sorry, there was an issue saving your recipe. Error: ${error.message}`,
+                                                            },
+                                                        ]);
+                                                    }
+                                                }}
+                                            >
+                                                Select Recipe
+                                            </button>
                                         </div>
                                     ))}
                                 </div>
                             )}
-                            {/* Display Ingredients */}
-                    {/* {message.ingredients && (
-                        <div className="ingredients-list">
-                            <strong>Ingredients:</strong>
-                            <ul>
-                                {message.ingredients.map((ingredient, idx) => (
-                                    <li key={idx}>{ingredient}</li>
-                                ))}
-                            </ul>
-                        </div>
-                    )} */}
-                    {message.ingredients && (
-                        <div className="ingredients-list">
-                            <strong>Best Matches:</strong>
-                            <ul>
-                                {Object.entries(message.ingredients).map(([ingredient, match], idx) => (
-                                    <li key={idx}>
-                                        {ingredient}: {match}
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
-                        </div>
-                        {message.sender === "customer" && (
-                            <img src={customerAvatar} alt="Customer Avatar" className="chat-logo-customer" />
-                        )}
+                                {message.ingredients && (
+                                    <div className="ingredients-list">
+                                        <strong>Best Matches:</strong>
+                                        <ul>
+                                            {Object.entries(message.ingredients).map(([ingredient, match], idx) => (
+                                                <li key={idx}>
+                                                    {ingredient}: {match}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
                     </div>
+                    {message.sender === "customer" && (
+                        <img src={customerAvatar} alt="Customer Avatar" className="chat-logo-customer" />
+                    )}
+                </div>
                 ))}
             </div>
             <div className="chat-input-container">
-                <input
+                <input style={{
+                    backgroundColor: "#f4f4f4",
+                    color: "black",
+                }}
                     type="text"
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     placeholder="Type your request, e.g., 'I want pasta with tomato sauce'"
                 />
                 <button className="send-button" onClick={handleTestSend}>
+                {/*<button className="send-button" onClick={handleSend}>*/}
                     Send
                 </button>
             </div>
+
+
+
+
+            {/* Message Box for Confirmation */}
+            {showCheckoutBox && (
+                <div className="checkout-box">
+                    <div className="checkout-box-content">
+                        {/* Dish Name Heading */}
+                        <h3>Pasta with Tomato Sauce</h3>
+                        <h4>Review Ingredients</h4>
+                        <table className="checkout-table">
+                            <thead>
+                            <tr>
+                                <th>Image</th>
+                                <th>Item</th>
+                                <th>Suggested</th>
+                                <th>Quantity</th>
+                                <th>Price</th>
+                                <th>Pick/Drop</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {ingredients.map((item, index) => (
+                                <tr
+                                    key={index}
+                                    style={{
+                                        backgroundColor: item.quantity > 0 ? "darkgreen" : "white",
+                                        color: item.quantity > 0 ? "white" : "black",
+                                    }}
+                                >
+                                    <td>
+                                        <img
+                                            src={item.imageUrl}
+                                            alt={item.name}
+                                            style={{
+                                                width: "50px",
+                                                height: "50px",
+                                                objectFit: "cover",
+                                                borderRadius: "5px",
+                                            }}
+                                        />
+                                    </td>
+                                    <td>{item.name}</td>
+                                    <td>{item.recommended}</td>
+                                    <td>
+                                        <button onClick={() => updateQuantity(index, -1)}>-</button>
+                                        <span>{item.quantity}</span>
+                                        <button onClick={() => updateQuantity(index, 1)}>+</button>
+                                    </td>
+                                    <td>${item.price.toFixed(2)}</td>
+                                    <td>
+                                        <button onClick={() => toggleSelect(index)}>
+                                            {item.quantity > 0 ? "Drop" : "Pick"}
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                            </tbody>
+                        </table>
+                        {/* Price Summary */}
+                        <div className="price-summary">
+                            <strong>Total:</strong> ${ingredients
+                            .filter((item) => item.selected && item.quantity > 0)
+                            .reduce((total, item) => total + item.price * item.quantity, 0)
+                            .toFixed(2)}
+                        </div>
+                        <button className="add-to-cart-button" onClick={handleAddToCart}>
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
