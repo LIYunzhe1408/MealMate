@@ -68,12 +68,36 @@ class RecipeFinder:
         print(f"Dataset size: {len(self.ds['train'])}")
         
         
-        results = [
-            {
+        # results = [
+        #     {
+        #         'title': self.ds['train']['title'][idx],
+        #         'ingredients': self.ds['train']['ingredients'][idx],
+        #         'similarity_score': float(similarities[idx])
+        #     }
+        #     for idx in top_k_indices
+        # ]
+        
+        # split by coma
+        results = []
+        for idx in top_k_indices:
+            raw_ingredients = self.ds['train']['ingredients'][idx]
+
+            ingredient_list = raw_ingredients.split(';')
+
+            processed_ingredients = []
+            for ingredient in ingredient_list:
+                if ',' in ingredient:
+                    ingredient = ingredient.split(',', 1)[0].strip()
+                else:
+                    ingredient = ingredient.strip() 
+                processed_ingredients.append(ingredient)
+
+            formatted_ingredients = '; '.join(processed_ingredients)
+
+            results.append({
                 'title': self.ds['train']['title'][idx],
-                'ingredients': self.ds['train']['ingredients'][idx],
+                'ingredients': formatted_ingredients,
                 'similarity_score': float(similarities[idx])
-            }
-            for idx in top_k_indices
-        ]
+            })
+
         return results
