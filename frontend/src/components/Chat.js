@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./Chat.css";
 import assistantLogo from "../assets/MealMate-chat-logo.png";
 import customerAvatar from "../assets/customer.jpg";
@@ -12,7 +12,19 @@ function Chat({ setCart }) {
 
     // Ingredients with recommended and current quantities
     const [ingredients, setIngredients] = useState([]);
+    const [shopName, setShopName] = useState([]);
+    const [recipe, setRecipe] = useState([]);
     const [recipeSuggestions, setRecipeSuggestions] = useState([]);
+
+    // Ref to scroll the chat container
+    const chatContainerRef = useRef(null);
+
+    // Automatically scroll to the bottom when messages change
+    useEffect(() => {
+        if (chatContainerRef.current) {
+            chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+        }
+    }, [messages]);
 
     const predefinedIngredients = [
         {
@@ -212,7 +224,9 @@ function Chat({ setCart }) {
     return (
         <div className="chat">
             {/*<h2>Chat with us</h2>*/}
-            <div className="chat-messages">
+            <div className="chat-messages"
+                 ref={chatContainerRef}
+                 style={{ overflowY: "auto"}}>
                 {messages.map((message, index) => (
                     <div key={index} className="chat-message-container">
                         {message.sender === "assistant" && (
@@ -259,9 +273,11 @@ function Chat({ setCart }) {
                                                         const data = await response.json();
                                                         console.log("Backend response:", data);
 
+                                                        let predefinedIngredients = data.formatted_output
 
                                                         setIngredients(predefinedIngredients);
-                                                        setShowCheckoutBox(true);
+                                                        setShopName(data.store);
+                                                        setRecipe(Object.keys(data.recipe)[0])
 
 
                                                         if (data.type === "ingredients") {
@@ -303,6 +319,9 @@ function Chat({ setCart }) {
                                                 </li>
                                             ))}
                                         </ul>
+                                        <button className="review-ingredient-button" onClick={() => setShowCheckoutBox(true)}>
+                                            <span className="text">Check Ingredients</span>
+                                        </button>
                                     </div>
                                 )}
                     </div>
@@ -320,6 +339,11 @@ function Chat({ setCart }) {
                     type="text"
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
+                    onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                            handleTestSend(); // Trigger the Send button logic
+                        }
+                    }}
                     placeholder="Type your request, e.g., 'I want pasta with tomato sauce'"
                 />
                 <button className="send-button" onClick={handleTestSend}>
@@ -329,15 +353,13 @@ function Chat({ setCart }) {
             </div>
 
 
-
-
             {/* Message Box for Confirmation */}
             {showCheckoutBox && (
                 <div className="checkout-box">
                     <div className="checkout-box-content">
                         {/* Dish Name Heading */}
-                        <h3>Pasta with Tomato Sauce</h3>
-                        <h4>Review Ingredients</h4>
+                        <h3>Review Ingredients for <u style={{color: "darkorange"}}>{recipe}</u></h3>
+                        <p>Recommended store: {shopName}</p>
                         <table className="checkout-table">
                             <thead>
                             <tr>
@@ -396,6 +418,9 @@ function Chat({ setCart }) {
                         </div>
                         <button className="add-to-cart-button" onClick={handleAddToCart}>
                             Add to Cart
+                        </button>
+                        <button className="add-to-cart-button" onClick={()=>setShowCheckoutBox(false)}>
+                            Cancel
                         </button>
                     </div>
                 </div>

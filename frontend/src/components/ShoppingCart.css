@@ -112,7 +112,7 @@
 
 /* Scrollable Cart Box */
 .cart-scroll-box {
-    max-height: 300px;
+    max-height: 500px;
     overflow-y: auto;
     border: 1px solid #ddd;
     padding: 20px;

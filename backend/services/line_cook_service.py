@@ -7,6 +7,7 @@ import os
 import numpy as np
 import csv
 from typing import Dict, List, Any
+from backend.utils.data_processor import produce_matched_ingredient_for_cart
 
 class LineCookService:
     def __init__(self, database_paths: str, embeddings_model_name: str = 'paraphrase-MiniLM-L6-v2', n_products: int = 10):
@@ -355,8 +356,11 @@ class LineCookService:
                 formatted_output.append({
                     "name": best_match,
                     "price": float(round(price, 2)),
+                    "recommended": 1,
                     "quantity": 1,
-                    "selected": True
+                    "selected": True,
+                    "unit": "",
+                    "imageUrl": ""
                 })
             else:
                 best_matches[ingredient] = "None"
@@ -408,6 +412,9 @@ class LineCookService:
                     print(f'Removing dish')
 
         print("Best matches: ", best_matches), print("Mapped ingredients: ", mapped_ingredients)
+
+        # Make it best fit for frontend
+        formatted_output = produce_matched_ingredient_for_cart(formatted_output)
 
         return best_matches, mapped_ingredients, formatted_output
 

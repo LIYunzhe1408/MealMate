@@ -81,7 +81,7 @@ def line_cook():
                     store = "Whole Foods"
                 break
 
-        print("BEST MATCHES: ", best_matches), print("MAPPED INGREDIENTS: ", mapped_ingredients), print("STORE: ", store), print("FORMATTED OUTPUT: ", formatted_output)
+        print("BEST MATCHES: ", best_matches), print("MAPPED INGREDIENTS: ", mapped_ingredients), print("STORE: ", store), print("FORMATTED OUTPUT: ", formatted_output), print("RECIPE: ", recipe)
 
 
         # Return the response
@@ -91,7 +91,8 @@ def line_cook():
             "best_matches": best_matches,
             "mapped_ingredients": mapped_ingredients,
             "store": store,
-            "formatted_output": formatted_output
+            "formatted_output": formatted_output,
+            "recipe": recipe
         }), 200
 
     except Exception as e:
