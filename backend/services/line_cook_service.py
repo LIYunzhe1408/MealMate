@@ -49,7 +49,7 @@ class LineCookService:
 
 
     def get_llm_response(self, prompt: str) -> str:
-        completion = openai.chat.completions.create(
+        completion = openai.ChatCompletion.create(
             model="gpt-4o-mini",
             messages=[{"role": "user", "content": prompt}]
         )

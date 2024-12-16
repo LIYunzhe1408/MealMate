@@ -6,6 +6,8 @@ from services.line_cook_service import LineCookService
 # from transformers import pipeline
 import openai
 import os
+import json
+
 
 # Configure logging
 logging.getLogger("urllib3").setLevel(logging.WARNING)
@@ -39,18 +41,39 @@ def handle_chat():
         
         logger.debug(f"Intent: {intent}")
         if intent == "recipe-related":
-            # Step 2: Get recipe suggestions for recipe-related queries
-            recipe = chef_service.get_recipe_suggestions(user_message)
-            # print(" RECIPE!!!!!!!!!!!!!!!!!!! ", recipe)
-            chosen_recipe = {
-            recipe[0]['title']: recipe[0]['ingredients']
-        }
-            print(chosen_recipe)
-            response = {
-                'type': 'recipe',
-                'recipe': recipe,
-                'message': "Here are the top recipes matching your query!"
-            }
+            # Step 2: Using LLM to get recipe suggestions for recipe-related queries.
+            prompt = (
+                f"You are an expert chef. You will be given a user query about finding recipes. "
+                "Find the 3 most likely dishes that match this query. For each dish, include the title and ingredients list. "
+                "Return the result strictly as a JSON array in the following format: "
+                "[{'title': '<Dish 1 title>', 'ingredients': '<Dish 1 ingredients>'}, "
+                "{'title': '<Dish 2 title>', 'ingredients': '<Dish 2 ingredients>'}, "
+                "{'title': '<Dish 3 title>', 'ingredients': '<Dish 3 ingredients>'}]."
+            )
+            completion = openai.ChatCompletion.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": prompt},
+                    {"role": "user", "content": user_message}
+                ]
+            )
+            gpt_response = completion["choices"][0]["message"]["content"]
+            logger.debug(f"GPT-4 recipe response: {gpt_response}")
+            
+            try:
+                # Safely parse the GPT response as JSON
+                formatted_response = gpt_response.replace("'", '"')
+                recipe = json.loads(formatted_response)
+                response = {
+                    'type': 'recipe',
+                    'recipe': recipe,
+                    'message': "Here are the top recipes matching your query!"
+                }
+            except Exception as parse_error:
+                logger.error(f"Error parsing GPT response: {str(parse_error)}")
+                logger.error(f"GPT response: {gpt_response}")
+                return jsonify({'error': 'Failed to parse recipe data.'}), 500
+            
         else:
             # Step 3: Use OpenAI for non-recipe-related queries
             completion = openai.ChatCompletion.create(
