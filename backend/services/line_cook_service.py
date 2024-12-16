@@ -85,16 +85,32 @@ class LineCookService:
         return similarity_df.head(n)
     
 
-    def LLM_find_best_match(self, closest_ingredients: List[str], specific_ingredient: str, recipe: Dict[str, List[str]]) -> str:
-        prompt = f"""I am going to make the recipe {recipe}. I have automated a search through a store's database and have found the 5 closest igredients to {specific_ingredient}: {closest_ingredients}.
-    Your job is to find out if any of the ingredients, {closest_ingredients} match the ingredient I am looking for: {specific_ingredient}. The ingredients do not have to match exacty,
-    but it has to work in the recipe I provided. That means that synonyms or similar ingredients are also valid, as long as they work in the recipe. However, be careful and use your knowledge
-    about food. Just because two ingredients have similar names, does not mean they work in the same recipe.
-    If one or more of the ingredients matches the ingredient I am looking for, output the ingredient that matches best. If none of the ingredients match, please write 'None'.
-    Only output either the closest ingredient or 'None'."""
-        best_match = self.get_llm_response(prompt)
-        return best_match
+    # def LLM_find_best_match(self, closest_ingredients: List[str], specific_ingredient: str, recipe: Dict[str, List[str]]) -> str:
+    #     prompt = f"""I am going to make the recipe {recipe}. I have automated a search through a store's database and have found the 5 closest ingredients to {specific_ingredient}: {closest_ingredients}.
+    # Your job is to find out if any of the ingredients, {closest_ingredients} match the ingredient I am looking for: {specific_ingredient}. The ingredients do not have to match exactly,
+    # but it has to work in the recipe I provided. That means that synonyms or similar ingredients are also valid, as long as they work in the recipe. However, be careful and use your knowledge
+    # about food. Just because two ingredients have similar names, does not mean they work in the same recipe.
+    # If one or more of the ingredients matches the ingredient I am looking for, output the ingredient that matches best. If none of the ingredients match, please write 'None'.
+    # Only output either the closest ingredient or 'None'."""
+    #     best_match = self.get_llm_response(prompt)
+    #     return best_match
     
+    
+    def LLM_find_matches(self, closest_ingredients: List[str], specific_ingredient: str, recipe: Dict[str, List[str]]) -> List[str]:
+        prompt = f"""I am going to make the recipe {recipe}. I have automated a search through a store's database and have found the 5 closest ingredients to {specific_ingredient}: {closest_ingredients}.
+    Your job is to find out if any of the ingredients, {closest_ingredients} match the ingredient I am looking for: {specific_ingredient}. The ingredients do not have to match exactly,
+    but it has to work in the recipe I provided. That means that synonyms or similar ingredients are also valid, as long as they work in the recipe. However, be careful and use your knowledge
+    about food. Just because two ingredients have similar names, does not mean they work in the same recipe. For example: Strawberry flavored ice cream can not replace strawberries in a recipe. Output all ingredients that match the ingredient I am looking for.
+    If none of the ingredients match, please write 'None'.
+    Only output either the matching ingredient(s) or 'None'.
+    The format for the output should be a list of strings, where each string is a specific ingredient found here: {closest_ingredients} that matches the ingredient I am looking for."""
+        matches = self.get_llm_response(prompt)
+        
+        if matches == 'None':
+            return []
+        else:
+            return ast.literal_eval(matches)
+        
     def LLM_remove_basic_ingredients(self, recipe: Dict[str, List[str]]) -> Dict[str, List[str]]:
         prompt = f"""I am looking at ingredient availability in a store for the ingredients in this recipe: {recipe}. I am assuming that the user has the basic ingredients. Your job is to
     remove all the basic ingredients in the recipe. The recipe you write should look exactly as the one I gave you, just that the basic ingredients are removed. Examples of basic ingredients are 'salt', 'pepper', 'Olive Oil', 'Sugar', but 
@@ -116,10 +132,143 @@ class LineCookService:
     in your response."""
         replacements = self.get_llm_response(prompt)
         return replacements
+
+    # def find_prices_for_ingredients(ingredients_dict: Dict[str, List[str]], csv_path: str) -> Dict[str, Dict[str, float]]:
+    #     # Load the CSV file
+    #     print("Loading CSV file...")
+    #     df = pd.read_csv(csv_path)
+
+    #     # Ensure the necessary columns exist
+    #     if "description" not in df.columns or "price" not in df.columns:
+    #         raise ValueError("CSV file must contain 'description' and 'price' columns.")
+
+    #     # Initialize the results dictionary
+    #     results = {}
+
+    #     # Iterate through the input dictionary
+    #     for ingredient, matches in ingredients_dict.items():
+    #         ingredient_prices = {}
+
+    #         for match in matches:
+    #             # Search for the match in the 'description' column containing "lb" or similar units
+    #             matched_rows = df[
+    #                 df["description"].str.contains(match, case=False, na=False) &
+    #                 df["description"].str.contains(r"\b(lb|lbs|pound|pounds)\b", case=False, na=False)
+    #             ]
+
+    #             # If matches are found, store their prices
+    #             if not matched_rows.empty:
+    #                 # Extract the first price match (can extend this logic later)
+    #                 price = matched_rows.iloc[0]["price"]
+    #                 description = matched_rows.iloc[0]["description"]
+    #                 ingredient_prices[match] = {"price_per_lb": round(float(price), 2), "description": description}
+    #             else:
+    #                 ingredient_prices[match] = {"price_per_lb": None, "description": "Not Found"}
+
+    #         results[ingredient] = ingredient_prices
+
+    #     return results
     
+    # def select_best_match(self, matches: List[str], budget_sensitivity: int) -> Dict[str, Any]:
+    #     if not matches:
+    #         return {"best_match": None, "price": None, "reason": "No matches found"}
+
+    #     # Simulate prices for the given matches (e.g., 1 to 10)
+    #     # price_data = {ingredient: random.uniform(1.0, 10.0) for ingredient in matches}
+
+    #     print(f"Generated prices: {price_data}")  # Debug: Print price data
+
+    #     # Sort based on budget sensitivity:
+    #     # - Low sensitivity (1): Sort by price last.
+    #     # - High sensitivity (5): Prioritize the cheapest.
+    #     if budget_sensitivity == 1:
+    #         # Pick the first ingredient (ignoring price)
+    #         best_match = matches[0]
+    #     else:
+    #         # Sort by price (ascending) to prioritize cheaper ingredients
+    #         sorted_matches = sorted(price_data.items(), key=lambda x: x[1])
+    #         best_match = sorted_matches[0][0]  # Ingredient with the lowest price
+
+    #     return {
+    #         "best_match": best_match,
+    #         "price": round(price_data[best_match], 2),
+    #         "reason": f"Selected based on budget sensitivity: {budget_sensitivity}"
+    #     }
 
     def search_for_ingreds(self, recipe: Dict[str, List[str]], store_num: int):
-        remove_dish = False
+        # def convert_to_lbs(description: str, price: float) -> float:
+        #     """Converts price to price per pound if weight is specified."""
+        #     import re
+        #     match = re.search(r'(\d+(?:\.\d+)?)\s*(oz|lb|lbs)', description.lower())
+        #     if match:
+        #         weight = float(match.group(1))
+        #         unit = match.group(2)
+        #         if "oz" in unit:
+        #             weight /= 16  # Convert ounces to pounds
+        #         return round(price / weight, 2) if weight > 0 else None
+        #     return None  # No weight information available
+
+        def convert_prices_to_lbs(df: pd.DataFrame) -> pd.DataFrame:
+            """
+            Convert prices in the dataframe to a per-lb price based on Category Name.
+
+            Args:
+                df (pd.DataFrame): DataFrame with 'Category Name' and 'Prices' columns.
+
+            Returns:
+                pd.DataFrame: Updated DataFrame with 'Price per lb' column.
+            """
+
+            def extract_weight_and_convert(price: float, name: str) -> float:
+                """
+                Extract weight (lbs or oz) from the name and convert price to per-lb price.
+                """
+                import re
+                # Look for patterns like "16 oz", "2 lbs", "1.5 lb", etc.
+                match = re.search(r"(\d+(\.\d+)?)\s*(oz|lb|lbs)", name.lower())
+
+                if match:
+                    weight = float(match.group(1))  # Extract the numeric weight
+                    unit = match.group(3)  # Extract the unit (oz or lb)
+
+                    if unit == "oz":
+                        weight_lbs = weight / 16  # Convert oz to lbs
+                    else:  # Already in lbs
+                        weight_lbs = weight
+
+                    # Calculate price per lb
+                    if weight_lbs > 0:
+                        return price / weight_lbs
+
+                # If no weight is found or invalid weight, assume price is already per lb
+                return price
+
+            # Apply the function to each row in the DataFrame
+            df['Price per lb'] = df.apply(lambda row: extract_weight_and_convert(row['Prices'], row['Category Name']), axis=1)
+
+            return df
+
+        def normalize_column(column: pd.Series) -> pd.Series:
+            min_val, max_val = column.min(), column.max()
+            if max_val == min_val:
+                return column.apply(lambda x: 0.0)  # Return all 0 if values are constant
+            return (column - min_val) / (max_val - min_val)
+    
+        def calculate_final_score(similarity: float, price: float, w_s: float, w_p: float) -> float:
+            """Calculate final score based on weighted similarity and price."""
+            return w_s * similarity - w_p * price
+
+        # Assign weights based on budget preference
+        weight_map = {
+            1: (1, -1),  # Bias towards expensive
+            2: (1, 0),
+            3: (1, 0),  # Neutral
+            4: (1, 0),
+            5: (1, 0),  # Bias towards cheap
+        }
+        w_s, w_p = weight_map[1]
+        # remove_dish = False
+        # Step 1: Remove basic ingredients using LLM
         filtered_recipe = self.LLM_remove_basic_ingredients(recipe)
 
         recipe_ingredients = [item for sublist in recipe.values() for item in sublist]
@@ -128,20 +277,86 @@ class LineCookService:
 
         best_matches = {}
         mapped_ingredients = {}
-        prices_best_matches = {}
+        # prices_best_matches = {}
 
         # Mark basic ingredients
         for ingredient in basic_ingreds:
             best_matches[ingredient] = 'Basic Ingredient, assumes customer has it'
             mapped_ingredients[ingredient] = ['Basic Ingredient']
 
-        filtered_ingredients_list = list(filtered_recipe.values())[0] 
+        filtered_ingredients_list = list(filtered_recipe.values())[0]
         for ingredient in filtered_ingredients_list:
+            # Step 1: Find 10 closest specific ingredients
             similarity_scores = self.get_similarity_scores(ingredient, store_num, self.n_products)
-            mapped_ingredients[ingredient] = similarity_scores["Category Name"].tolist()
-            prices_mapped_ingredients = similarity_scores["Prices"].tolist()
-            best_match = self.LLM_find_best_match(similarity_scores["Category Name"].tolist(), ingredient, recipe)
-            best_matches[ingredient] = best_match
+            updated_df = convert_prices_to_lbs(similarity_scores)
+
+            # Step 2: Normalize prices and similarity scores
+            updated_df['Normalized Price'] = normalize_column(updated_df['Price per lb'])
+            updated_df['Normalized Similarity'] = normalize_column(updated_df['Similarity Score'])
+
+            # Step 3: Use LLM to find acceptable ingredients
+            closest_ingredients = updated_df['Category Name'].tolist()
+            print("Closest ingredients: ", closest_ingredients)
+            acceptable_ingredients = self.LLM_find_matches(closest_ingredients, ingredient, recipe)
+            print("Acceptable ingredients: ", acceptable_ingredients)
+
+            # Filter DataFrame for acceptable ingredients
+            filtered_df = updated_df[updated_df['Category Name'].isin(acceptable_ingredients)]
+
+            # Step 4: Calculate final scores
+            filtered_df['Final Score'] = calculate_final_score(
+                filtered_df['Normalized Similarity'], filtered_df['Normalized Price'], w_s, w_p
+            )
+
+            # Step 5: Select the best match
+            if not filtered_df.empty:
+                print("\n--- Accepted Ingredients ---")
+                # Print all accepted ingredients with price per lb and final score
+                for index, row in filtered_df.iterrows():
+                    print(f"Ingredient: {row['Category Name']}, Price per lb: {row['Price per lb']:.2f}, Final Score: {row['Final Score']:.4f}")
+                
+                # Sort the DataFrame by the 'Final Score' column in descending order
+                best_match = filtered_df.sort_values(by='Final Score', ascending=False).iloc[0]['Category Name']
+                
+                print(f"\nBest Match for '{ingredient}': {best_match}\n")
+                
+                # Assign the best ingredient match to the 'best_matches' dictionary
+                best_matches[ingredient] = best_match
+            else:
+                # If the DataFrame is empty (no acceptable ingredients found)
+                print(f"\nNo acceptable ingredients found for '{ingredient}'. Assigning 'None'.\n")
+                best_matches[ingredient] = "None"
+
+            # Store all matched ingredients
+            mapped_ingredients[ingredient] = closest_ingredients
+
+
+            # # Step 3: Use LLM to find acceptable ingredients
+            # acceptable_ingredients = self.LLM_find_matches(closest_ingredients, ingredient, recipe)
+            # acceptable_prices = {}
+            # for idx, specific_ingredient in enumerate(closest_ingredients):
+            #     if specific_ingredient in acceptable_ingredients:
+            #         price_per_lb = convert_to_lbs(specific_ingredient, closest_prices[idx])
+            #         if price_per_lb:
+            #             acceptable_prices[specific_ingredient] = price_per_lb
+
+            # if not acceptable_ingredients:
+            #     best_matches[ingredient] = 'None'
+            # else:
+            #     # Step 4: Select the best match based on budget sensitivity
+            #     sorted_ingredients = sorted(acceptable_prices.items(), key=lambda x: x[1])
+            #     if budget_preference == 1:  # User doesn't care about price
+            #         best_matches[ingredient] = sorted_ingredients[0][0]
+            #     else:
+            #         # Adjust sorting based on budget preference (1-5)
+            #         best_matches[ingredient] = sorted_ingredients[0][0]  # Cheapest ingredient
+            # mapped_ingredients[ingredient] = closest_ingredients
+            
+
+
+
+            # best_match = self.LLM_find_best_match(similarity_scores["Category Name"].tolist(), ingredient, recipe)
+            # best_matches[ingredient] = best_match
 
 
         # Handle 'None' matches
@@ -157,6 +372,8 @@ class LineCookService:
                 elif action == 'Remove dish.':
                     best_matches[key] = 'None, remove dish'
                     print(f'Removing dish')
+
+        print("Best matches: ", best_matches), print("Mapped ingredients: ", mapped_ingredients)
 
         return best_matches, mapped_ingredients
 
