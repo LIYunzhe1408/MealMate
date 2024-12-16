@@ -235,7 +235,7 @@ class LineCookService:
 
                 if match:
                     weight = float(match.group(1))  # Extract numeric value
-                    unit = match.group(3)           # Extract unit (oz, lb, L, mL)
+                    unit = match.group(4)           # Extract unit (oz, lb, L, mL)
 
                     # Convert units to pounds
                     if unit == "oz":
