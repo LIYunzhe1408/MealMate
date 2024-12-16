@@ -2,9 +2,33 @@ import React, { useState } from "react";
 
 const BudgetModal = ({ setBudgetPreference }) => {
     const [budget, setBudget] = useState(3); // Default is 3 (moderate sensitivity)
+    const [isSaving, setIsSaving] = useState(false); // Track saving state
+    const [error, setError] = useState(null); // Handle errors
 
-    const handleSave = () => {
-        setBudgetPreference(budget); // Pass budget to parent component
+    const handleSave = async () => {
+        setIsSaving(true);
+        setError(null);
+
+        try {
+            const response = await fetch("http://127.0.0.1:5000/api/set-budget", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ budgetPreference: budget }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to save budget preference. Status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log("Budget Preference Saved:", data); // Debugging log
+            setBudgetPreference(budget); // Pass budget to parent component
+        } catch (err) {
+            console.error("Error saving budget preference:", err);
+            setError("Failed to save budget preference. Please try again.");
+        } finally {
+            setIsSaving(false); // Reset saving state
+        }
     };
 
     return (
@@ -22,14 +46,24 @@ const BudgetModal = ({ setBudgetPreference }) => {
                                 color: num === budget ? "white" : "black",
                             }}
                             onClick={() => setBudget(num)}
+                            disabled={isSaving} // Disable while saving
                         >
                             {num}
                         </button>
                     ))}
                 </div>
-                <button style={styles.saveButton} onClick={handleSave}>
-                    Save Preference
+                <button
+                    style={{
+                        ...styles.saveButton,
+                        opacity: isSaving ? 0.6 : 1,
+                        cursor: isSaving ? "not-allowed" : "pointer",
+                    }}
+                    onClick={handleSave}
+                    disabled={isSaving}
+                >
+                    {isSaving ? "Saving..." : "Save Preference"}
                 </button>
+                {error && <p style={{ color: "red" }}>{error}</p>}
             </div>
         </div>
     );

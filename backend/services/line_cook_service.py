@@ -195,7 +195,7 @@ class LineCookService:
     #         "reason": f"Selected based on budget sensitivity: {budget_sensitivity}"
     #     }
 
-    def search_for_ingreds(self, recipe: Dict[str, List[str]], store_num: int):
+    def search_for_ingreds(self, recipe: Dict[str, List[str]], store_num: int, budget_preference: int):
         # def convert_to_lbs(description: str, price: float) -> float:
         #     """Converts price to price per pound if weight is specified."""
         #     import re
@@ -221,31 +221,44 @@ class LineCookService:
 
             def extract_weight_and_convert(price: float, name: str) -> float:
                 """
-                Extract weight (lbs or oz) from the name and convert price to per-lb price.
+                Extract weight (lbs, oz, L, mL) from the name and convert price to per-lb price.
+                Ignores percentages or other non-unit numbers.
+                Assumptions:
+                - 1 L ≈ 2.2 lbs
+                - 1 mL ≈ 0.0022 lbs
+                - 16 oz = 1 lb
                 """
                 import re
-                # Look for patterns like "16 oz", "2 lbs", "1.5 lb", etc.
-                match = re.search(r"(\d+(\.\d+)?)\s*(oz|lb|lbs)", name.lower())
+                # Enhanced regex to exclude percentages and invalid matches
+                match = re.search(r"(?<!\d)(\d+(\.\d+)?)(\s*)?(oz|lb|lbs|l|ml)\b", name.lower())
 
                 if match:
-                    weight = float(match.group(1))  # Extract the numeric weight
-                    unit = match.group(3)  # Extract the unit (oz or lb)
+                    weight = float(match.group(1))  # Extract numeric value
+                    unit = match.group(3)           # Extract unit (oz, lb, L, mL)
 
+                    # Convert units to pounds
                     if unit == "oz":
                         weight_lbs = weight / 16  # Convert oz to lbs
-                    else:  # Already in lbs
-                        weight_lbs = weight
+                    elif unit in ["lb", "lbs"]:
+                        weight_lbs = weight       # Already in pounds
+                    elif unit == "l" or unit == "liter":
+                        weight_lbs = weight * 2.2  # Convert liters to pounds (approximate)
+                    elif unit == "ml":
+                        weight_lbs = weight * 0.0022  # Convert milliliters to pounds
+                    else:
+                        weight_lbs = None  # Unrecognized unit
 
-                    # Calculate price per lb
-                    if weight_lbs > 0:
-                        return price / weight_lbs
+                    # Calculate price per lb if weight is valid
+                    if weight_lbs and weight_lbs > 0:
+                        return round(price / weight_lbs, 2)
 
-                # If no weight is found or invalid weight, assume price is already per lb
+                # If no weight/volume is detected or invalid, assume price is already per lb
                 return price
+
+
 
             # Apply the function to each row in the DataFrame
             df['Price per lb'] = df.apply(lambda row: extract_weight_and_convert(row['Prices'], row['Category Name']), axis=1)
-
             return df
 
         def normalize_column(column: pd.Series) -> pd.Series:
@@ -260,13 +273,13 @@ class LineCookService:
 
         # Assign weights based on budget preference
         weight_map = {
-            1: (1, -1),  # Bias towards expensive
-            2: (1, 0),
-            3: (1, 0),  # Neutral
-            4: (1, 0),
-            5: (1, 0),  # Bias towards cheap
+            1: (0.9, -0.1),  # Strong bias towards similarity, little concern for price
+            2: (0.75, -0.25),  # Moderate bias towards similarity, minor concern for price
+            3: (0.5, -0.5),  # Neutral balance between similarity and price
+            4: (0.25, -0.75),  # Moderate bias towards cheaper prices
+            5: (0.1, -0.9),  # Strong bias towards cheaper prices
         }
-        w_s, w_p = weight_map[1]
+        w_s, w_p = weight_map[budget_preference]
         # remove_dish = False
         # Step 1: Remove basic ingredients using LLM
         filtered_recipe = self.LLM_remove_basic_ingredients(recipe)
@@ -277,6 +290,7 @@ class LineCookService:
 
         best_matches = {}
         mapped_ingredients = {}
+        formatted_output = []
         # prices_best_matches = {}
 
         # Mark basic ingredients
@@ -308,23 +322,43 @@ class LineCookService:
                 filtered_df['Normalized Similarity'], filtered_df['Normalized Price'], w_s, w_p
             )
 
-            # Step 5: Select the best match
+            # # Step 5: Select the best match
+            # if not filtered_df.empty:
+            #     print("\n--- Accepted Ingredients ---")
+            #     # Print all accepted ingredients with price per lb and final score
+            #     for index, row in filtered_df.iterrows():
+            #         print(f"Ingredient: {row['Category Name']}, Price per lb: {row['Price per lb']:.2f}, Final Score: {row['Final Score']:.4f}")
+                
+            #     # Sort the DataFrame by the 'Final Score' column in descending order
+            #     best_match = filtered_df.sort_values(by='Final Score', ascending=False).iloc[0]['Category Name']
+                
+            #     print(f"\nBest Match for '{ingredient}': {best_match}\n")
+                
+            #     # Assign the best ingredient match to the 'best_matches' dictionary
+            #     best_matches[ingredient] = best_match
+            # else:
+            #     # If the DataFrame is empty (no acceptable ingredients found)
+            #     print(f"\nNo acceptable ingredients found for '{ingredient}'. Assigning 'None'.\n")
+            #     best_matches[ingredient] = "None"
+            
+            # Select best match and exclude "None" matches
             if not filtered_df.empty:
-                print("\n--- Accepted Ingredients ---")
-                # Print all accepted ingredients with price per lb and final score
-                for index, row in filtered_df.iterrows():
-                    print(f"Ingredient: {row['Category Name']}, Price per lb: {row['Price per lb']:.2f}, Final Score: {row['Final Score']:.4f}")
-                
-                # Sort the DataFrame by the 'Final Score' column in descending order
-                best_match = filtered_df.sort_values(by='Final Score', ascending=False).iloc[0]['Category Name']
-                
-                print(f"\nBest Match for '{ingredient}': {best_match}\n")
-                
-                # Assign the best ingredient match to the 'best_matches' dictionary
+                best_match_row = filtered_df.sort_values(by='Final Score', ascending=False).iloc[0]
+                best_match = best_match_row['Category Name']
+                price = best_match_row['Price per lb']
+
+                # Update results
                 best_matches[ingredient] = best_match
+                mapped_ingredients[ingredient] = closest_ingredients
+
+                # Add to formatted output
+                formatted_output.append({
+                    "name": best_match,
+                    "price": float(round(price, 2)),
+                    "quantity": 1,
+                    "selected": True
+                })
             else:
-                # If the DataFrame is empty (no acceptable ingredients found)
-                print(f"\nNo acceptable ingredients found for '{ingredient}'. Assigning 'None'.\n")
                 best_matches[ingredient] = "None"
 
             # Store all matched ingredients
@@ -375,7 +409,7 @@ class LineCookService:
 
         print("Best matches: ", best_matches), print("Mapped ingredients: ", mapped_ingredients)
 
-        return best_matches, mapped_ingredients
+        return best_matches, mapped_ingredients, formatted_output
 
     def write_to_csv(self, best_matches: Dict[str, Any], mapped_ingredients: Dict[str, List[str]], output_file: str):
         keys = best_matches.keys()
