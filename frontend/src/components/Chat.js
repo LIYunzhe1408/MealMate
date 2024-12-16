@@ -3,7 +3,9 @@ import "./Chat.css";
 import assistantLogo from "../assets/MealMate-chat-logo.png";
 import customerAvatar from "../assets/customer.jpg";
 
-function Chat({ setCart }) {
+function Chat({ setCart, preferences }) {
+    // console.log("User Preferences in Chat:", preferences);
+
     const [messages, setMessages] = useState([
         { sender: "assistant", text: "Hello! I'm your virtual assistant. How can I help you today?" },
     ]);
@@ -171,7 +173,10 @@ function Chat({ setCart }) {
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ message: inputValue }),
+                    body: JSON.stringify({ 
+                        message: inputValue,
+                        preferences: preferences, // Pass user preferences
+                    }),
                 });
 
                 if (!response.ok) {

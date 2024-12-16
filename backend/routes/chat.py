@@ -34,6 +34,13 @@ def handle_chat():
 
     try: 
         user_message = data.get('message', '')
+        preferences = data.get('preferences', {})
+        price_preference = preferences.get('pricePreference')
+        allergies = preferences.get('allergies')
+        
+        print(f"price preference: {price_preference} received in backend")
+        print(f"allergies: {allergies} received in backend")
+
         logger.debug(f"User message: {user_message}")
         
         # Step 1: Classify intent
@@ -45,10 +52,13 @@ def handle_chat():
             prompt = (
                 f"You are an expert chef. You will be given a user query about finding recipes. "
                 "Find the 3 most likely dishes that match this query. For each dish, include the title and ingredients list. "
+                "The ingredients total price should be less than the budget: {price_preference} dollars and should not contain any of the allergies: {allergies}."
                 "Return the result strictly as a JSON array in the following format: "
                 "[{'title': '<Dish 1 title>', 'ingredients': '<Dish 1 ingredients>'}, "
                 "{'title': '<Dish 2 title>', 'ingredients': '<Dish 2 ingredients>'}, "
                 "{'title': '<Dish 3 title>', 'ingredients': '<Dish 3 ingredients>'}]."
+                "Only return the JSON array in the specified format and nothing else."
+                
             )
             completion = openai.ChatCompletion.create(
                 model="gpt-4o-mini",
