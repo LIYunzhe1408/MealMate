@@ -79,8 +79,9 @@ input[type="text"] {
     background-color: black;
     color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: 20px;
     cursor: pointer;
+    font-weight: bold;
     box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
     margin-left: auto;
     margin-right: 10px;
@@ -129,7 +130,8 @@ input[type="text"] {
 .select-recipe-button {
     margin-top: 10px;
     padding: 10px 20px;
-    background-color: #28a745;
+    /*background-color: #28a745;*/
+    background-color: #000;
     color: white;
     border: none;
     border-radius: 4px;
@@ -139,4 +141,47 @@ input[type="text"] {
 
 .select-recipe-button:hover {
     background-color: #218838;
+}
+
+.review-ingredient-button  {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #000; /* Black background */
+    color: #fff; /* White text */
+    border: none; /* Remove borders */
+    border-radius: 20px; /* Rounded edges */
+    padding: 8px 12px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    gap: 8px;
+    position: relative; /* For positioning the text */
+    overflow: hidden;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    width: 150px; /* Icon-only width initially */
+    height: 40px;
+}
+
+.review-ingredient-button:hover {
+    opacity: 60%;
+}
+
+.add-to-cart-button {
+    margin-top:10px;
+    padding: 10px 20px;
+    background-color: black;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: bold;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+    margin-left: auto;
+    margin-right: 10px;
+}
+
+.add-to-cart-button:hover {
+    /*background-color: #f4f4f4;*/
+    opacity: 60%;
 }
