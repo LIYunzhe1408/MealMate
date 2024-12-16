@@ -67,6 +67,7 @@ def line_cook():
             print
             for key, value in best_matches.items():
                 if value == 'None, remove dish':
+                    print("No matches found in store ", i)
                     look_in_new_store = True
             if not look_in_new_store:
                 if i == 0:

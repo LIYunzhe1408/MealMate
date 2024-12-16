@@ -7,7 +7,7 @@ import os
 import numpy as np
 import csv
 from typing import Dict, List, Any
-from backend.utils.data_processor import produce_matched_ingredient_for_cart
+from utils.data_processor import produce_matched_ingredient_for_cart
 
 class LineCookService:
     def __init__(self, database_paths: str, embeddings_model_name: str = 'paraphrase-MiniLM-L6-v2', n_products: int = 10):
@@ -319,6 +319,7 @@ class LineCookService:
             filtered_df = updated_df[updated_df['Category Name'].isin(acceptable_ingredients)]
 
             # Step 4: Calculate final scores
+            filtered_df = filtered_df.copy()
             filtered_df['Final Score'] = calculate_final_score(
                 filtered_df['Normalized Similarity'], filtered_df['Normalized Price'], w_s, w_p
             )
