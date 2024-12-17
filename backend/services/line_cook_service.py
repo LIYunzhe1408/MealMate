@@ -387,9 +387,7 @@ class LineCookService:
 
         # Make it best fit for frontend
         formatted_output = produce_matched_ingredient_for_cart(formatted_output)
-        print(recipe)
-        print("directions: ", recipe['directions'])
-        return best_matches, mapped_ingredients, formatted_output, recipe['directions']
+        return best_matches, mapped_ingredients, formatted_output
 
     def write_to_csv(self, best_matches: Dict[str, Any], mapped_ingredients: Dict[str, List[str]], output_file: str):
         keys = best_matches.keys()

@@ -60,20 +60,18 @@ def line_cook():
         print("DEBUG: Recipe received: ", recipe)
         key = recipe['title']  # Extract the recipe title
         ingredients = recipe['ingredients']  # Extract the ingredients
-        directions = recipe['directions']  # Extract the directions
 
         # Combine into a final recipe dictionary
         final_recipe = {
             key: {
-                "ingredients": ingredients,
-                "directions": directions
+                "ingredients": ingredients
             }
         }
         
         for i in range(5):
             store = "None"
             look_in_new_store = False
-            best_matches, mapped_ingredients, formatted_output, directions = line_cook_service.search_for_ingreds(recipe, i, BUDGET_PREFERENCE)
+            best_matches, mapped_ingredients, formatted_output = line_cook_service.search_for_ingreds(recipe, i, BUDGET_PREFERENCE)
             print
             for key, value in best_matches.items():
                 if value == 'None, remove dish':
@@ -92,7 +90,7 @@ def line_cook():
                     store = "Whole Foods"
                 break
 
-        print("BEST MATCHES: ", best_matches), print("MAPPED INGREDIENTS: ", mapped_ingredients), print("STORE: ", store), print("FORMATTED OUTPUT: ", formatted_output), print("RECIPE: ", recipe), print("INSTRUCTIONS: ", directions)
+        print("BEST MATCHES: ", best_matches), print("MAPPED INGREDIENTS: ", mapped_ingredients), print("STORE: ", store), print("FORMATTED OUTPUT: ", formatted_output), print("RECIPE: ", recipe)
 
 
         # Lookup function
@@ -102,7 +100,7 @@ def line_cook():
         # Example usage
         recipe_title = "Pasta with Tomato Sauce"
         directions = get_recipe_directions(recipe_title)
-        print(f"LIne_cook : Directions for {recipe_title}: {directions}")
+        print(f"Line_cook : Directions for {recipe_title}: {directions}")
         
         # Return the response
         return jsonify({
