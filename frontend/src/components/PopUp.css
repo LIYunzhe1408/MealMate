@@ -18,7 +18,14 @@
     padding: 20px;
     border-radius: 8px;
     text-align: center;
-    width: 300px;
+    width: 400px;
+}
+
+/* Price Explanation */
+.price-explanation {
+    font-size: 0.9em;
+    color: #555;
+    margin-bottom: 10px;
 }
 
 /* Budget Options */
@@ -37,15 +44,22 @@
     cursor: pointer;
     transition: all 0.3s ease;
 }
-/* 
-.budget-button:hover {
-    background-color: #007bff;
-    color: white;
-} */
 
 .budget-button.selected {
     background-color: #007bff;
     color: white;
+}
+
+/* Allergies Input */
+.allergies-input {
+    width: 70%;
+    /* Full width */
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    font-size: 1em;
 }
 
 /* Submit Button */

@@ -17,6 +17,9 @@ function PopUp({ onSubmit }) {
                 <form onSubmit={handleSubmit}>
                     <label>
                         <strong>Price Preference ($):</strong>
+                        <p className="price-explanation">
+                            1 = Least budget sensitive, 5 = Most budget sensitive
+                        </p>
                         <div className="budget-options">
                             {[1, 2, 3, 4, 5].map((num) => (
                                 <button
@@ -40,6 +43,7 @@ function PopUp({ onSubmit }) {
                             value={allergies}
                             onChange={(e) => setAllergies(e.target.value)}
                             placeholder="Enter allergies (e.g., nuts, gluten)"
+                            className="allergies-input" // Add a class for wider input
                         />
                     </label>
                     <br />
