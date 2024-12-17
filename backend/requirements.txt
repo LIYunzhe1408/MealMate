@@ -10,3 +10,9 @@ huggingface-hub==0.17.2  # Ensure compatibility with sentence-transformers
 transformers==4.34.0     # Dependency for sentence-transformers
 torch==2.0.1            # Required by sentence-transformers
 openai==0.28
+python-dotenv
+flask
+tqdm
+sentence_transformers
+datasets
+openai

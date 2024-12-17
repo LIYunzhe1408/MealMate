@@ -5,6 +5,7 @@ from services.line_cook_service import LineCookService
 import openai
 from dotenv import load_dotenv
 import os
+from services.recipe_finder import RecipeFinder
 
 load_dotenv()  # Load environment variables from .env file
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -56,14 +57,23 @@ def line_cook():
         recipe = data.get('recipe', {})
         
         # recipe looks like this: {'title': 'Homemade Pasta without a Pasta Machine', 'ingredients': ['2\u2009½ cups Italian-style tipo 00 flour, plus additional for dusting ', ' 3 large eggs ', ' 1 pinch salt ', ' 1 tablespoon water, or as needed']}
+        print("DEBUG: Recipe received: ", recipe)
+        key = recipe['title']  # Extract the recipe title
+        ingredients = recipe['ingredients']  # Extract the ingredients
+        directions = recipe['directions']  # Extract the directions
 
-        key = recipe['title']
-        value = recipe['ingredients']
-        recipe = {key: value}
+        # Combine into a final recipe dictionary
+        final_recipe = {
+            key: {
+                "ingredients": ingredients,
+                "directions": directions
+            }
+        }
+        
         for i in range(5):
             store = "None"
             look_in_new_store = False
-            best_matches, mapped_ingredients, formatted_output = line_cook_service.search_for_ingreds(recipe, i, BUDGET_PREFERENCE)
+            best_matches, mapped_ingredients, formatted_output, directions = line_cook_service.search_for_ingreds(recipe, i, BUDGET_PREFERENCE)
             print
             for key, value in best_matches.items():
                 if value == 'None, remove dish':
@@ -82,9 +92,18 @@ def line_cook():
                     store = "Whole Foods"
                 break
 
-        print("BEST MATCHES: ", best_matches), print("MAPPED INGREDIENTS: ", mapped_ingredients), print("STORE: ", store), print("FORMATTED OUTPUT: ", formatted_output), print("RECIPE: ", recipe)
+        print("BEST MATCHES: ", best_matches), print("MAPPED INGREDIENTS: ", mapped_ingredients), print("STORE: ", store), print("FORMATTED OUTPUT: ", formatted_output), print("RECIPE: ", recipe), print("INSTRUCTIONS: ", directions)
 
 
+        # Lookup function
+        def get_recipe_directions(recipe_title: str):
+            return RecipeFinder.title_to_directions.get(recipe_title, "Recipe not found in dataset")
+
+        # Example usage
+        recipe_title = "Pasta with Tomato Sauce"
+        directions = get_recipe_directions(recipe_title)
+        print(f"LIne_cook : Directions for {recipe_title}: {directions}")
+        
         # Return the response
         return jsonify({
             "type": "ingredients",
@@ -93,7 +112,8 @@ def line_cook():
             "mapped_ingredients": mapped_ingredients,
             "store": store,
             "formatted_output": formatted_output,
-            "recipe": recipe
+            "recipe": recipe,
+            "directions": directions
         }), 200
 
     except Exception as e:

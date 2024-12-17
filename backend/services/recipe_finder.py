@@ -19,6 +19,12 @@ class RecipeFinder:
         self.ds = load_dataset("Shengtao/recipe")
         print("Dataset loaded.")
         
+        print("Creating title to directions mapping...")
+        self.title_to_directions = {
+            recipe['title']: recipe['directions'] for recipe in self.ds['train']
+        }
+        print("Title to directions mapping created.")
+        
         # used for testing
         # self.subset = self.ds['train'].select(range(100))
         # print(f"Subset sample: {self.subset[:2]}")

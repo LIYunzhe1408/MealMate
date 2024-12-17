@@ -383,12 +383,13 @@ class LineCookService:
                     best_matches[key] = 'None, remove dish'
                     print(f'Removing dish')
 
-        print("Best matches: ", best_matches), print("Mapped ingredients: ", mapped_ingredients)
+        # print("Best matches: ", best_matches), print("Mapped ingredients: ", mapped_ingredients)
 
         # Make it best fit for frontend
         formatted_output = produce_matched_ingredient_for_cart(formatted_output)
-
-        return best_matches, mapped_ingredients, formatted_output
+        print(recipe)
+        print("directions: ", recipe['directions'])
+        return best_matches, mapped_ingredients, formatted_output, recipe['directions']
 
     def write_to_csv(self, best_matches: Dict[str, Any], mapped_ingredients: Dict[str, List[str]], output_file: str):
         keys = best_matches.keys()
