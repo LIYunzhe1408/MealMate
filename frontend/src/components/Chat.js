@@ -17,6 +17,7 @@ function Chat({ setCart, preferences }) {
     const [shopName, setShopName] = useState([]);
     const [recipe, setRecipe] = useState([]);
     const [recipeSuggestions, setRecipeSuggestions] = useState([]);
+    const [loading, setLoading] = useState(false); // Loading state
 
     // Ref to scroll the chat container
     const chatContainerRef = useRef(null);
@@ -27,118 +28,6 @@ function Chat({ setCart, preferences }) {
             chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
         }
     }, [messages]);
-
-    const predefinedIngredients = [
-        {
-            name: "Pasta",
-            price: 2.5,
-            recommended: 1,
-            quantity: 1,
-            selected: true,
-            unit: "200g",
-            imageUrl: "/images/pasta/pasta.png"
-        },
-        {
-            name: "Olive oil",
-            price: 1.2,
-            recommended: 1,
-            quantity: 1,
-            selected: true,
-            unit: "2 tbsp",
-            imageUrl: "/images/pasta/Olive Oil.png"
-        },
-        {
-            name: "Garlic",
-            price: 0.5,
-            recommended: 3,
-            quantity: 3,
-            selected: true,
-            unit: "2-3 cloves",
-            imageUrl: "/images/pasta/garlic.png"
-        },
-        {
-            name: "Small onion",
-            price: 0.8,
-            recommended: 1,
-            quantity: 1,
-            selected: true,
-            unit: "1",
-            imageUrl: "/images/pasta/onion.png"
-        },
-        {
-            name: "Canned tomatoes",
-            price: 1.5,
-            recommended: 1,
-            quantity: 1,
-            selected: true,
-            unit: "400g",
-            imageUrl: "/images/pasta/canned tomato.png"
-        },
-        {
-            name: "Sugar",
-            price: 0.2,
-            recommended: 1,
-            quantity: 1,
-            selected: true,
-            unit: "1 tsp",
-            imageUrl: "/images/pasta/sugar.png"
-        },
-        {
-            name: "Salt and pepper",
-            price: 0.3,
-            recommended: 1,
-            quantity: 1,
-            selected: true,
-            unit: "",
-            imageUrl: "/images/pasta/saltandpepper.png"
-        },
-        {
-            name: "Fresh basil leaves",
-            price: 0.7,
-            recommended: 1,
-            quantity: 1,
-            selected: true,
-            unit: "",
-            imageUrl: "/images/pasta/leaves.png"
-        },
-        {
-            name: "Grated Parmesan cheese",
-            price: 1.0,
-            recommended: 1,
-            quantity: 1,
-            selected: true,
-            unit: "",
-            imageUrl: "/images/pasta/cheese.png"
-        },
-    ];
-
-    const handleSend = () => {
-        if (inputValue.trim() !== "") {
-            setMessages([...messages, { sender: "customer", text: inputValue }]);
-
-            // Check if user requests a pasta recipe
-            if (inputValue.toLowerCase().includes("pasta with tomato sauce")) {
-                setIngredients(predefinedIngredients);
-                setShowCheckoutBox(true); // Show the message box for confirmation
-                setMessages((prevMessages) => [
-                    ...prevMessages,
-                    { sender: "assistant", text: "Please confirm the items in the message box." },
-                ]);
-            } else if (inputValue.toLowerCase() === "add to cart") {
-                setShowCheckoutBox(true); // Show the message box for confirmation
-                setMessages((prevMessages) => [
-                    ...prevMessages,
-                    { sender: "assistant", text: "Please confirm the items in the message box." },
-                ]);
-            } else {
-                setMessages((prevMessages) => [
-                    ...prevMessages,
-                    { sender: "assistant", text: "How can I assist you further?" },
-                ]);
-            }
-            setInputValue("");
-        }
-    };
 
     const updateQuantity = (index, delta) => {
         const updatedIngredients = [...ingredients];
@@ -178,6 +67,7 @@ function Chat({ setCart, preferences }) {
                 ...prevMessages,
                 { sender: "customer", text: inputValue },
             ]);
+            setLoading(true); // Show loading overlay
 
             try {
                 const response = await fetch('http://127.0.0.1:5000/api/chat', {
@@ -197,7 +87,6 @@ function Chat({ setCart, preferences }) {
 
                 const data = await response.json();
                 console.log("Response from backend:", data);
-
                 if (data.type === "recipe") {
                     // Add recipe cards to the chat
                     setMessages((prevMessages) => [
@@ -220,6 +109,8 @@ function Chat({ setCart, preferences }) {
                     ...prevMessages,
                     { sender: "assistant", text: "Sorry, I couldn't process your request. Please try again." },
                 ]);
+            } finally {
+                setLoading(false); // Show loading overlay
             }
 
             setInputValue(""); // Clear input field
@@ -264,6 +155,7 @@ function Chat({ setCart, preferences }) {
 
                                                         console.log("Sending payload to backend:", selectedRecipe);
 
+                                                        setLoading(true); // Show loading overlay
                                                         const response = await fetch('http://127.0.0.1:5000/api/line-cook', {
                                                             method: 'POST',
                                                             headers: {
@@ -287,6 +179,7 @@ function Chat({ setCart, preferences }) {
                                                         setRecipe(Object.keys(data.recipe)[0])
 
 
+                                                        setLoading(false); // Show loading overlay
                                                         if (data.type === "ingredients") {
                                                             // Add recipe cards to the chat
                                                             setMessages((prevMessages) => [
@@ -365,17 +258,25 @@ function Chat({ setCart, preferences }) {
                 <div className="checkout-box">
                     <div className="checkout-box-content">
                         {/* Dish Name Heading */}
-                        <h3>Review Ingredients for <u style={{color: "darkorange"}}>{recipe}</u></h3>
+                        <h3>Review Ingredients</h3>
+                        <p>For <u style={{color: "darkorange"}}>{recipe}</u></p>
                         <p>Recommended store: {shopName}</p>
-                        <table className="checkout-table">
+                        <table
+                            className="checkout-table"
+                            style={{
+                                border: "none",
+                                borderCollapse: "collapse",
+                                width: "100%",
+                            }}
+                        >
                             <thead>
-                            <tr>
-                                <th>Image</th>
-                                <th>Item</th>
-                                <th>Suggested</th>
-                                <th>Quantity</th>
-                                <th>Price</th>
-                                <th>Pick/Drop</th>
+                            <tr style={{ border: "none" }}>
+                                <th style={{ border: "none", padding: "8px" }}>Image</th>
+                                <th style={{ border: "none", padding: "8px" }}>Item</th>
+                                <th style={{ border: "none", padding: "8px" }}>Suggested</th>
+                                <th style={{ border: "none", padding: "8px" }}>Quantity</th>
+                                <th style={{ border: "none", padding: "8px" }}>Price</th>
+                                <th style={{ border: "none", padding: "8px" }}>Pick/Drop</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -383,11 +284,12 @@ function Chat({ setCart, preferences }) {
                                 <tr
                                     key={index}
                                     style={{
-                                        backgroundColor: item.quantity > 0 ? "darkgreen" : "white",
-                                        color: item.quantity > 0 ? "white" : "black",
+                                        backgroundColor: item.quantity > 0 ? "white" : "lightgray",
+                                        color: item.quantity > 0 ? "black" : "white",
+                                        border: "none",
                                     }}
                                 >
-                                    <td>
+                                    <td style={{ border: "none", padding: "8px" }}>
                                         <img
                                             src={item.imageUrl}
                                             alt={item.name}
@@ -399,16 +301,30 @@ function Chat({ setCart, preferences }) {
                                             }}
                                         />
                                     </td>
-                                    <td>{item.name}</td>
-                                    <td>{item.recommended}</td>
-                                    <td>
-                                        <button onClick={() => updateQuantity(index, -1)}>-</button>
-                                        <span>{item.quantity}</span>
-                                        <button onClick={() => updateQuantity(index, 1)}>+</button>
+                                    <td style={{ border: "none", padding: "8px" }}>{item.name}</td>
+                                    <td style={{ border: "none", padding: "8px" }}>{item.recommended}</td>
+                                    <td style={{ border: "none", padding: "8px" }}>
+                                        <button
+                                            className="addMinus"
+                                            onClick={() => updateQuantity(index, -1)}
+                                        >
+                                            -
+                                        </button>
+                                        <span style={{ fontSize: "18px", margin: "0 5px 0 5px" }}>
+            {item.quantity}
+          </span>
+                                        <button
+                                            className="addMinus"
+                                            onClick={() => updateQuantity(index, 1)}
+                                        >
+                                            +
+                                        </button>
                                     </td>
-                                    <td>${item.price.toFixed(2)}</td>
-                                    <td>
-                                        <button onClick={() => toggleSelect(index)}>
+                                    <td style={{ border: "none", padding: "8px" }}>
+                                        ${item.price.toFixed(2)}
+                                    </td>
+                                    <td style={{ border: "none", padding: "8px" }}>
+                                        <button className="dropButton" onClick={() => toggleSelect(index)}>
                                             {item.quantity > 0 ? "Drop" : "Pick"}
                                         </button>
                                     </td>
@@ -416,6 +332,7 @@ function Chat({ setCart, preferences }) {
                             ))}
                             </tbody>
                         </table>
+
                         {/* Price Summary */}
                         <div className="price-summary">
                             <strong>Total:</strong> ${ingredients
@@ -430,6 +347,12 @@ function Chat({ setCart, preferences }) {
                             Cancel
                         </button>
                     </div>
+                </div>
+            )}
+            {/* Loading Overlay */}
+            {loading && (
+                <div className="loading-overlay">
+                    <div className="loading-content">Loading...</div>
                 </div>
             )}
         </div>

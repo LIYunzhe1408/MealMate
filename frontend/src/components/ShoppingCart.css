@@ -242,3 +242,22 @@
 .close-checkout-button:hover, .proceed-to-checkout-button:hover, .close-payment-box-button:hover {
     background-color: #0056b3;
 }
+
+
+.checkout-box-content{
+    border-radius: 60px;
+}
+
+.addMinus {
+    background-color: black ;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-left: auto;
+}
+
+
+.checkout-table {
+    border: none;
+}
