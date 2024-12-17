@@ -48,26 +48,29 @@ def line_cook():
         recipe = data.get('recipe', {})
         preferences = data.get('preferences', {})
         price_preference = preferences.get('pricePreference')
-        
-        print(f"budget preference received in back end: {price_preference}")
-        
-        # recipe looks like this: {'title': 'Homemade Pasta without a Pasta Machine', 'ingredients': ['2\u2009½ cups Italian-style tipo 00 flour, plus additional for dusting ', ' 3 large eggs ', ' 1 pinch salt ', ' 1 tablespoon water, or as needed']}
+
+        print(f"Budget preference received in back end: {price_preference}")
 
         key = recipe['title']
         value = recipe['ingredients']
         recipe = {key: value}
+        unavailable_ingredients = set()
+
         for i in range(5):
             store = "None"
             look_in_new_store = False
             recipe_copy = copy.deepcopy(recipe)
             print(f'Recipe_copy: {recipe_copy}')
-            best_matches, mapped_ingredients, formatted_output = line_cook_service.search_for_ingreds(recipe_copy, i, int(price_preference))
+            best_matches, mapped_ingredients, formatted_output = line_cook_service.search_for_ingreds(
+                recipe_copy, i, int(price_preference))
 
-            for key, value in best_matches.items():
-                if value == 'None, remove dish':
-                    print("No matches found in store ", i)
+            # Check if any ingredient is unavailable
+            for ingredient, match in best_matches.items():
+                if match == 'None, remove dish':
+                    unavailable_ingredients.add(ingredient)
                     look_in_new_store = True
-            if not look_in_new_store:
+
+            if not unavailable_ingredients:  # If no unavailable ingredients, stop searching
                 if i == 0:
                     store = "Safeway"
                 elif i == 1:
@@ -80,11 +83,28 @@ def line_cook():
                     store = "Whole Foods"
                 break
 
+        # If there are unavailable ingredients, return a fun message
+        if unavailable_ingredients:
+            unavailable_message = (
+                "Uh-oh! 🚫 It looks like we couldn't find some key ingredients in your local stores: "
+                f"{', '.join(unavailable_ingredients)}. Maybe it’s time to unleash your inner chef and try a different dish 🍳!"
+            )
+            
+            print(f"Unavailable ingredients: {unavailable_ingredients}")
+            print(f"Unavailable message: {unavailable_message}")
+            return jsonify({
+                "type": "unavailable_message",
+                "unavailable_message": unavailable_message,
+                "mapped_ingredients": mapped_ingredients,
+                "store": store,
+                "formatted_output": formatted_output,
+                "recipe": recipe
+            }), 200
 
-        # Return the response
+        # Return success response if all ingredients are found
         return jsonify({
             "type": "ingredients",
-            "message": "Recipe saved successfully.",
+            "message": "Recipe ingredients successfully matched!",
             "best_matches": best_matches,
             "mapped_ingredients": mapped_ingredients,
             "store": store,

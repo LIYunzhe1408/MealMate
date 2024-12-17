@@ -298,6 +298,13 @@ function Chat({ setCart, preferences }) {
                                                                 },
                                                             ]);
                                                         }
+                                                        else if (data.type === "unavailable_message") {
+                                                            // Display only the unavailable message text
+                                                            setMessages((prevMessages) => [
+                                                                ...prevMessages,
+                                                                { sender: "assistant", text: data.unavailable_message },
+                                                            ]);
+                                                        }
                                                     } catch (error) {
                                                         console.error("Error sending recipe to backend:", error);
                                                         setMessages((prevMessages) => [
