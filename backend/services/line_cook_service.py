@@ -113,11 +113,12 @@ class LineCookService:
             return ast.literal_eval(matches)
         
     def LLM_remove_basic_ingredients(self, recipe: Dict[str, List[str]]) -> Dict[str, List[str]]:
-        prompt = f"""I am looking at ingredient availability in a store for the ingredients in this recipe: {recipe}. I am assuming that the user has the basic ingredients. Your job is to
-    remove all the basic ingredients in the recipe. The recipe you write should look exactly as the one I gave you, just that the basic ingredients are removed. Examples of basic ingredients are 'salt', 'pepper', 'Olive Oil', 'Sugar', but 
-    many more exists. 
-    The output should only be a dictionary with the key as the name of the recipe and the values as the remaining ingredients, written exactly as in the recipe I provided you, aslo included the amount of each ingredient.
-    Your answer should contain nothing else."""
+        prompt = f""" Given the following recipe: {recipe} Assume the user already has access to basic ingredients. Example of basic ingredients are salt, pepper, olive oil, sugar, water etc. 
+        Use your knowledge to identify other commonly considered basic ingredients. By basic ingredients I mean everything you can expect someone to have at home, so that it is not necessary
+        to buy it in the store for the recipe.
+        Remove all these basic ingredients from the recipe. The edited recipe should maintain the exact structure and wording of the original, but without the basic ingredients. Your response
+        should be a dictionary where: - The key is the name of the recipe. - The value is the list of remaining ingredients, each with its corresponding amount exactly as stated in the original recipe.
+        Only return the dictionary and nothing else. """
         remaining_recipe = self.get_llm_response(prompt)
         remaining_recipe = ast.literal_eval(remaining_recipe)
         return remaining_recipe
@@ -383,11 +384,10 @@ class LineCookService:
                     best_matches[key] = 'None, remove dish'
                     print(f'Removing dish')
 
-        print("Best matches: ", best_matches), print("Mapped ingredients: ", mapped_ingredients)
 
         # Make it best fit for frontend
         formatted_output = produce_matched_ingredient_for_cart(formatted_output)
-
+        print("formatted_output: ", formatted_output)
         return best_matches, mapped_ingredients, formatted_output
 
     def write_to_csv(self, best_matches: Dict[str, Any], mapped_ingredients: Dict[str, List[str]], output_file: str):

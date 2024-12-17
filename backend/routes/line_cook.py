@@ -5,6 +5,7 @@ from services.line_cook_service import LineCookService
 import openai
 from dotenv import load_dotenv
 import os
+import copy
 
 load_dotenv()  # Load environment variables from .env file
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -63,8 +64,9 @@ def line_cook():
         for i in range(5):
             store = "None"
             look_in_new_store = False
-            best_matches, mapped_ingredients, formatted_output = line_cook_service.search_for_ingreds(recipe, i, BUDGET_PREFERENCE)
-            print
+            recipe_copy = copy.deepcopy(recipe)
+            print(f'Recipe_copy: {recipe_copy}')
+            best_matches, mapped_ingredients, formatted_output = line_cook_service.search_for_ingreds(recipe_copy, i, BUDGET_PREFERENCE)
             for key, value in best_matches.items():
                 if value == 'None, remove dish':
                     print("No matches found in store ", i)
@@ -82,9 +84,8 @@ def line_cook():
                     store = "Whole Foods"
                 break
 
-        print("BEST MATCHES: ", best_matches), print("MAPPED INGREDIENTS: ", mapped_ingredients), print("STORE: ", store), print("FORMATTED OUTPUT: ", formatted_output), print("RECIPE: ", recipe)
 
-
+        print("Recipe: ", recipe)
         # Return the response
         return jsonify({
             "type": "ingredients",
