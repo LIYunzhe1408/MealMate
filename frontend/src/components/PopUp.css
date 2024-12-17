@@ -1,53 +1,64 @@
+/* Modal Overlay */
 .modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.5);
     display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
     z-index: 1000;
 }
 
+/* Modal Container */
 .modal {
-    background: white;
+    background-color: white;
     padding: 20px;
     border-radius: 8px;
-    max-width: 400px;
-    width: 100%;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     text-align: center;
+    width: 300px;
 }
 
-.modal h2 {
-    margin-bottom: 20px;
+/* Budget Options */
+.budget-options {
+    display: flex;
+    justify-content: space-around;
+    margin: 10px 0;
 }
 
-.modal label {
-    display: block;
-    margin-bottom: 10px;
-    text-align: left;
-}
-
-.modal input {
-    width: calc(100% - 20px);
-    padding: 8px;
-    margin-bottom: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-.submit-button {
-    background-color: black;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 4px;
+.budget-button {
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f4f4f4;
+    color: black;
     cursor: pointer;
+    transition: all 0.3s ease;
+}
+/* 
+.budget-button:hover {
+    background-color: #007bff;
+    color: white;
+} */
+
+.budget-button.selected {
+    background-color: #007bff;
+    color: white;
+}
+
+/* Submit Button */
+.submit-button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
 .submit-button:hover {
-    opacity: 60%;
+    background-color: #0056b3;
 }
