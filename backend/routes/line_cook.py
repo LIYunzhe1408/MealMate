@@ -39,22 +39,17 @@ print(f"Resolved file path: {absolute_paths}")
 # Initialize LineCookService
 line_cook_service = LineCookService(database_paths=absolute_paths)
 
-@line_cook_bp.route('/set-budget', methods=['POST'])
-def set_budget():
-    global BUDGET_PREFERENCE
-    data = request.get_json()
-    BUDGET_PREFERENCE = data.get('budgetPreference', 3)  # Default to 3
-    print(f"Budget preference set to: {BUDGET_PREFERENCE}")
-    return jsonify({"message": "Budget preference saved", "budgetPreference": BUDGET_PREFERENCE}), 200
 
 @line_cook_bp.route('/line-cook', methods=['POST'])
 def line_cook():
     try:
-        global BUDGET_PREFERENCE
-        print(f"Using budget preference: {BUDGET_PREFERENCE}")
         # Parse the JSON payload
         data = request.get_json()
         recipe = data.get('recipe', {})
+        preferences = data.get('preferences', {})
+        price_preference = preferences.get('pricePreference')
+        
+        print(f"budget preference received in back end: {price_preference}")
         
         # recipe looks like this: {'title': 'Homemade Pasta without a Pasta Machine', 'ingredients': ['2\u2009½ cups Italian-style tipo 00 flour, plus additional for dusting ', ' 3 large eggs ', ' 1 pinch salt ', ' 1 tablespoon water, or as needed']}
 
@@ -66,7 +61,8 @@ def line_cook():
             look_in_new_store = False
             recipe_copy = copy.deepcopy(recipe)
             print(f'Recipe_copy: {recipe_copy}')
-            best_matches, mapped_ingredients, formatted_output = line_cook_service.search_for_ingreds(recipe_copy, i, BUDGET_PREFERENCE)
+            best_matches, mapped_ingredients, formatted_output = line_cook_service.search_for_ingreds(recipe_copy, i, int(price_preference))
+
             for key, value in best_matches.items():
                 if value == 'None, remove dish':
                     print("No matches found in store ", i)
