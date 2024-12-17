@@ -52,22 +52,22 @@ def handle_chat():
             prompt = (
                 f"You are an expert chef. You will be given a user query about finding recipes. "
                 "Find the 3 most likely dishes that match this query. For each dish, include the title and ingredients list. "
-                "The ingredients total price should be less than the budget: {price_preference} dollars and should not contain any of the allergies: {allergies}."
-                "Return the result strictly as a JSON array in the following format: "
+                "The ingredients must be free from the following allergies: {allergies}."
+                "Return the result strictly as a JSON array in the following format, where each individual ingredients should be separated by ';': "
                 "[{'title': '<Dish 1 title>', 'ingredients': '<Dish 1 ingredients>'}, "
                 "{'title': '<Dish 2 title>', 'ingredients': '<Dish 2 ingredients>'}, "
                 "{'title': '<Dish 3 title>', 'ingredients': '<Dish 3 ingredients>'}]."
                 "Only return the JSON array in the specified format and nothing else."
                 
             )
-            completion = openai.ChatCompletion.create(
+            completion = openai.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
                     {"role": "system", "content": prompt},
                     {"role": "user", "content": user_message}
                 ]
             )
-            gpt_response = completion["choices"][0]["message"]["content"]
+            gpt_response = completion.choices[0].message.content
             logger.debug(f"GPT-4 recipe response: {gpt_response}")
             
             try:
@@ -86,7 +86,7 @@ def handle_chat():
             
         else:
             # Step 3: Use OpenAI for non-recipe-related queries
-            completion = openai.ChatCompletion.create(
+            completion = openai.chat.completions.create(
                 model="gpt-4o-mini",  # You can use "gpt-3.5-turbo" for cost efficiency
                 messages=[
                     {"role": "system", "content": "You are a helpful assistant."},
