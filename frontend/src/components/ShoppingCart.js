@@ -59,14 +59,21 @@ function ShoppingCart({ cart, setCart }) {
                 <div className="checkout-box">
                     <div className="checkout-box-content">
                         <h3>Shopping Cart Confirmation</h3>
-                        <table className="checkout-table">
+                        <table
+                            className="checkout-table"
+                            style={{
+                                border: "none",
+                                borderCollapse: "collapse",
+                                width: "100%",
+                            }}
+                        >
                             <thead>
-                            <tr>
-                                <th>Item</th>
-                                <th>Quantity</th>
-                                <th>Price</th>
-                                <th>Total</th>
-                                <th>Actions</th>
+                            <tr style={{ border: "none" }}>
+                                <th style={{ border: "none", padding: "8px" }}>Item</th>
+                                <th style={{ border: "none", padding: "8px" }}>Quantity</th>
+                                <th style={{ border: "none", padding: "8px" }}>Price</th>
+                                <th style={{ border: "none", padding: "8px" }}>Total</th>
+                                <th style={{ border: "none", padding: "8px" }}>Actions</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -75,25 +82,29 @@ function ShoppingCart({ cart, setCart }) {
                                     key={index}
                                     style={{
                                         backgroundColor: item.quantity === 0 ? "lightgrey" : "white",
+                                        border: "none",
                                     }}
                                 >
-                                    <td>{item.name}</td>
-                                    <td>{item.quantity}</td>
-                                    <td>${item.price.toFixed(2)}</td>
-                                    <td>${(item.price * item.quantity).toFixed(2)}</td>
-                                    <td>
-                                        <button
+                                    <td style={{ border: "none", padding: "8px" }}>{item.name}</td>
+                                    <td style={{ border: "none", padding: "8px" }}>{item.quantity}</td>
+                                    <td style={{ border: "none", padding: "8px" }}>${item.price.toFixed(2)}</td>
+                                    <td style={{ border: "none", padding: "8px" }}>
+                                        ${(item.price * item.quantity).toFixed(2)}
+                                    </td>
+                                    <td style={{ border: "none", padding: "8px" }}>
+                                        <button className="addMinus" style={{marginRight: "5px"}}
                                             onClick={() => updateQuantity(index, -1)}
                                             disabled={item.quantity === 0}
                                         >
                                             -
                                         </button>
-                                        <button onClick={() => updateQuantity(index, 1)}>+</button>
+                                        <button  className="addMinus" onClick={() => updateQuantity(index, 1)}>+</button>
                                     </td>
                                 </tr>
                             ))}
                             </tbody>
                         </table>
+
                         <div className="checkout-total">
                             <strong>Total: ${total.toFixed(2)}</strong>
                         </div>
