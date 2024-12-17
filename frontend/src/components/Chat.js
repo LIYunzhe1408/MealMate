@@ -258,6 +258,8 @@ function Chat({ setCart, preferences }) {
                                                                 title: recipe.title,
                                                                 ingredients: Array.isArray(recipe.ingredients) ? recipe.ingredients : recipe.ingredients.split(";"),
                                                             },
+                                                            preferences: preferences, // Add user preference to the payload
+
                                                         };
 
                                                         console.log("Sending payload to backend:", selectedRecipe);

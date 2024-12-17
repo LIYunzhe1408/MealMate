@@ -60,7 +60,7 @@ def handle_chat():
                 "Only return the JSON array in the specified format and nothing else."
                 
             )
-            completion = openai.chat.completions.create(
+            completion = openai.ChatCompletion.create(
                 model="gpt-4o-mini",
                 messages=[
                     {"role": "system", "content": prompt},
@@ -86,7 +86,7 @@ def handle_chat():
             
         else:
             # Step 3: Use OpenAI for non-recipe-related queries
-            completion = openai.chat.completions.create(
+            completion = openai.ChatCompletion.create(
                 model="gpt-4o-mini",  # You can use "gpt-3.5-turbo" for cost efficiency
                 messages=[
                     {"role": "system", "content": "You are a helpful assistant."},
