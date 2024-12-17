@@ -7,7 +7,7 @@ import logo from "./assets/MealMate-logo.png";
 
 function App() {
     const [budgetPreference, setBudgetPreference] = useState(null); // Budget preference state
-    const [showModal, setShowModal] = useState(true); // Modal visibility state
+    const [showModal, setShowModal] = useState(false); // Modal visibility state
     const [cart, setCart] = useState([]); // Manage cart items
 
     useEffect(() => {

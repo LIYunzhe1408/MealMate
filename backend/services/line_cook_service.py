@@ -273,6 +273,7 @@ class LineCookService:
 
         filtered_ingredients_list = list(filtered_recipe.values())[0]
         for ingredient in filtered_ingredients_list:
+            print(ingredient)
             # Step 1: Find 10 closest specific ingredients
             similarity_scores = self.get_similarity_scores(ingredient, store_num, self.n_products)
             updated_df = convert_prices_to_lbs(similarity_scores)
@@ -283,7 +284,6 @@ class LineCookService:
 
             # Step 3: Use LLM to find acceptable ingredients
             closest_ingredients = updated_df['Category Name'].tolist()
-            print("Closest ingredients: ", closest_ingredients)
             acceptable_ingredients = self.LLM_find_matches(closest_ingredients, ingredient, recipe)
             print("Acceptable ingredients: ", acceptable_ingredients)
 

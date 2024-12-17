@@ -85,7 +85,6 @@ def line_cook():
                 break
 
 
-        print("Recipe: ", recipe)
         # Return the response
         return jsonify({
             "type": "ingredients",
