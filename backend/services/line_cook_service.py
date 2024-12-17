@@ -197,38 +197,8 @@ class LineCookService:
     #     }
 
     def search_for_ingreds(self, recipe: Dict[str, List[str]], store_num: int, budget_preference: int):
-        # def convert_to_lbs(description: str, price: float) -> float:
-        #     """Converts price to price per pound if weight is specified."""
-        #     import re
-        #     match = re.search(r'(\d+(?:\.\d+)?)\s*(oz|lb|lbs)', description.lower())
-        #     if match:
-        #         weight = float(match.group(1))
-        #         unit = match.group(2)
-        #         if "oz" in unit:
-        #             weight /= 16  # Convert ounces to pounds
-        #         return round(price / weight, 2) if weight > 0 else None
-        #     return None  # No weight information available
-
         def convert_prices_to_lbs(df: pd.DataFrame) -> pd.DataFrame:
-            """
-            Convert prices in the dataframe to a per-lb price based on Category Name.
-
-            Args:
-                df (pd.DataFrame): DataFrame with 'Category Name' and 'Prices' columns.
-
-            Returns:
-                pd.DataFrame: Updated DataFrame with 'Price per lb' column.
-            """
-
             def extract_weight_and_convert(price: float, name: str) -> float:
-                """
-                Extract weight (lbs, oz, L, mL) from the name and convert price to per-lb price.
-                Ignores percentages or other non-unit numbers.
-                Assumptions:
-                - 1 L ≈ 2.2 lbs
-                - 1 mL ≈ 0.0022 lbs
-                - 16 oz = 1 lb
-                """
                 import re
                 # Enhanced regex to exclude percentages and invalid matches
                 match = re.search(r"(?<!\d)(\d+(\.\d+)?)(\s*)?(oz|lb|lbs|l|ml)\b", name.lower())
@@ -255,8 +225,6 @@ class LineCookService:
 
                 # If no weight/volume is detected or invalid, assume price is already per lb
                 return price
-
-
 
             # Apply the function to each row in the DataFrame
             df['Price per lb'] = df.apply(lambda row: extract_weight_and_convert(row['Prices'], row['Category Name']), axis=1)
@@ -287,7 +255,10 @@ class LineCookService:
 
         recipe_ingredients = [item for sublist in recipe.values() for item in sublist]
         filtered_ingredients = [item for sublist in filtered_recipe.values() for item in sublist]
-        basic_ingreds = [item for item in recipe_ingredients if item not in filtered_ingredients]
+        basic_ingreds = [
+            item.strip() for item in recipe_ingredients
+            if item.strip() not in [i.strip() for i in filtered_ingredients]
+        ]
 
         best_matches = {}
         mapped_ingredients = {}
