@@ -6,7 +6,7 @@ Three agents are integrated in our framework:
 * Recommender: Propose recommendations for substitution, dish, and store based on customer preference.
 
 #### Demo Layout
-![](./demoLayout.png)
+![](./demo.png)
 
 # Workflow
 ### Customer Manager
