@@ -11,15 +11,20 @@ from backend.services.line_cook_service import LineCookService
 from evaluation.line_cook_testing_part3_data import recipes, test_cases_replacements
 
 
-# Assuming this code is in `services/line_cook_service.py`
-file_path = os.path.join(os.path.dirname(
-    __file__), '..', 'backend', 'data', 'sampled_food.csv')
+file_paths = [
+                os.path.join(os.path.dirname(__file__), '..', 'backend','data', 'grocery_names_prices_safeway.csv'),
+                os.path.join(os.path.dirname(__file__), '..', 'backend','data', 'grocery_names_prices_target.csv'),
+                os.path.join(os.path.dirname(__file__), '..', 'backend','data', 'grocery_names_prices_trader_joes.csv'),
+                os.path.join(os.path.dirname(__file__), '..', 'backend','data', 'grocery_names_prices_walmart.csv'),
+                os.path.join(os.path.dirname(__file__), '..', 'backend','data', 'grocery_names_prices_whole_foods.csv')
+                ]
+
 # Resolve the path to its absolute form for clarity (optional, for debugging purposes)
-absolute_path = os.path.abspath(file_path)
-print(f"Resolved file path: {absolute_path}")
+absolute_paths = [os.path.abspath(file_paths[0]), os.path.abspath(file_paths[1]), os.path.abspath(file_paths[2]), os.path.abspath(file_paths[3]), os.path.abspath(file_paths[4])]
+print(f"Resolved file path: {absolute_paths}")
 
 # Initialize LineCookService
-line_cook_service = LineCookService(database_path=absolute_path)
+line_cook_service = LineCookService(database_paths=absolute_paths)
 
 test_score = 0
 total_tests = len(test_cases_replacements)
