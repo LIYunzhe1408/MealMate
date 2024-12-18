@@ -201,7 +201,10 @@ input[type="text"] {
 }
 
 .checkout-box-content{
-    border-radius: 60px;
+    border-radius: 20px;
+    max-height: 80%;
+    width: 80%;
+    overflow-y: scroll;
 }
 
 .addMinus {

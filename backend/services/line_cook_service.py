@@ -7,7 +7,7 @@ import os
 import numpy as np
 import csv
 from typing import Dict, List, Any
-from utils.data_processor import produce_matched_ingredient_for_cart
+from backend.utils.data_processor import produce_matched_ingredient_for_cart
 
 class LineCookService:
     def __init__(self, database_paths: str, embeddings_model_name: str = 'paraphrase-MiniLM-L6-v2', n_products: int = 10):
