@@ -319,7 +319,7 @@ class LineCookService:
             if not filtered_df.empty:
                 best_match_row = filtered_df.sort_values(by='Final Score', ascending=False).iloc[0]
                 best_match = best_match_row['Category Name']
-                price = best_match_row['Price per lb']
+                price = best_match_row['Price']
 
                 # Update results
                 best_matches[ingredient] = best_match
