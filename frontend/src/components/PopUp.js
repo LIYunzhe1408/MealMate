@@ -18,7 +18,7 @@ function PopUp({ onSubmit }) {
                     <label>
                         <strong>Price Preference ($):</strong>
                         <p className="price-explanation">
-                            1 = Least budget sensitive, 5 = Most budget sensitive
+                            1 = Money is no object, 5 = Highly budget-conscious
                         </p>
                         <div className="budget-options">
                             {[1, 2, 3, 4, 5].map((num) => (
