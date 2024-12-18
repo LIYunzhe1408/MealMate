@@ -4,7 +4,7 @@
 
 import sys
 import os
-
+import time
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from backend.services.line_cook_service import LineCookService
@@ -29,6 +29,8 @@ line_cook_service = LineCookService(database_paths=absolute_paths)
 test_score = 0
 total_tests = len(test_cases_replacements)
 
+start_time = time.time()
+
 for test_case in test_cases_replacements:
     recipe_name = test_case["recipe_name"]
     unavailable_ingredient = test_case["unavailable_ingredient"]
@@ -46,3 +48,11 @@ for test_case in test_cases_replacements:
         print(f"Test failed: {unavailable_ingredient} -> {replacement_test}, expected {expected}")
 
 print("The model scored: ", test_score, " out of ", total_tests)
+
+end_time = time.time()
+
+# Calculate total elapsed time
+elapsed_time = end_time - start_time
+
+print(f"Test score: {test_score}/{total_tests}")
+print(f"Total testing time: {elapsed_time:.2f} seconds")

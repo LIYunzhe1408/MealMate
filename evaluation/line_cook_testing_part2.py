@@ -7,7 +7,7 @@
 # it really depends on the user preference to choose turkey mince instead of ground beef).
 import sys
 import os
-
+import time
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from backend.services.line_cook_service import LineCookService
@@ -39,6 +39,8 @@ reference_mapping = {
 test_score = 0
 total_tests = len(test_cases)
 
+start_time = time.time()
+
 for test in test_cases:
     ingredient = test["ingredient"]
     candidates = test["candidates"]
@@ -62,4 +64,10 @@ for test in test_cases:
         else:
             print(f"Test failed: None != {expected}")
 
+end_time = time.time()
+
+# Calculate total elapsed time
+elapsed_time = end_time - start_time
+
 print(f"Test score: {test_score}/{total_tests}")
+print(f"Total testing time: {elapsed_time:.2f} seconds")
