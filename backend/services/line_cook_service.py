@@ -184,14 +184,14 @@ class LineCookService:
 
         # Assign weights based on budget preference
         weight_map = {
-            1: (1, 0.1), # Strong bias towards similarity, little concern for price
-            2: (1, 0.2), # Moderate bias towards similarity, minor concern for price
-            3: (1, 0.4),  # Neutral balance between similarity and price
-            4: (1, 0.5),  # Moderate bias towards cheaper prices
-            5: (1, 0.7),  # Strong bias towards cheaper prices
+            1: (1, -0.2), # Strong bias towards similarity, little concern for price
+            2: (1, -0.1), # Moderate bias towards similarity, minor concern for price
+            3: (1, 0),  # Neutral balance between similarity and price
+            4: (1, 0.2),  # Moderate bias towards cheaper prices
+            5: (1, 0.5),  # Strong bias towards cheaper prices
         }
         w_s, w_p = weight_map[budget_preference]
-        # remove_dish = False
+
         # Step 1: Remove basic ingredients using LLM
         filtered_recipe = self.LLM_remove_basic_ingredients(recipe)
 
@@ -226,8 +226,6 @@ class LineCookService:
             # Step 2: Normalize prices and similarity scores
             updated_df['Normalized Price'] = normalize_column(
                 updated_df['Price per lb'])
-            # updated_df['Normalized Similarity'] = normalize_column(
-            #     updated_df['Similarity Score'])
             print("UPDATED DATAFRAME:  \n", updated_df)
 
             # Step 3: Use LLM to find acceptable ingredients
@@ -248,13 +246,6 @@ class LineCookService:
             )
             print("FILTERED ACCEPTABLE DATAFRAME WITH FINAL SCORE:  \n", filtered_df)
 
-            # Step 4.1: Print each acceptable ingredient's details
-            # print("\n--- Acceptable Ingredients ---")
-            # if not filtered_df.empty:
-            #     for index, row in filtered_df.iterrows():
-            #         print(f"Name: {row['Category Name']}, Price per lb: {row['Price per lb']:.2f}, Final Score: {row['Final Score']:.4f}")
-            # else:
-            #     print("No acceptable ingredients found.")
             # Select best match and exclude "None" matches
             if not filtered_df.empty:
                 best_match_row = filtered_df.sort_values(
