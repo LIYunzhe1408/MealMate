@@ -184,7 +184,6 @@ function Chat({ setCart, preferences }) {
                                                             // Add recipe cards to the chat
                                                             setMessages((prevMessages) => [
                                                                 ...prevMessages,
-                                                                { sender: "assistant", text: "Here are the ingredients needed:" },
                                                                 {
                                                                     sender: "assistant",
                                                                     ingredients: data.best_matches, // Pass ingreds as part of the message
@@ -217,15 +216,25 @@ function Chat({ setCart, preferences }) {
                                 </div>
                             )}
                                 {message.ingredients && (
+                                    
                                     <div className="ingredients-list">
-                                        <strong>Best Matches:</strong>
-                                        <ul>
-                                            {Object.entries(message.ingredients).map(([ingredient, match], idx) => (
-                                                <li key={idx}>
-                                                    {ingredient}: {match}
-                                                </li>
-                                            ))}
-                                        </ul>
+                                        <p>Here are the ingredients needed for {recipe}: </p>
+                                        <table style={{ borderCollapse: "collapse", width: "100%", marginBottom: "10px" }}>
+                                            <thead>
+                                                <tr>
+                                                    <th style={{ border: "1px solid #ddd", padding: "8px", textAlign: "left" }}>Ingredient</th>
+                                                    <th style={{ border: "1px solid #ddd", padding: "8px", textAlign: "left" }}>Found in {shopName}:</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {Object.entries(message.ingredients).map(([ingredient, match], idx) => (
+                                                    <tr key={idx}>
+                                                        <td style={{ border: "1px solid #ddd", padding: "8px" }}>{ingredient}</td>
+                                                        <td style={{ border: "1px solid #ddd", padding: "8px" }}>{match}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
                                         <button className="review-ingredient-button" onClick={() => setShowCheckoutBox(true)}>
                                             <span className="text">Check Ingredients</span>
                                         </button>
