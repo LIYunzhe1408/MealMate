@@ -6,6 +6,7 @@ import ast
 import os
 import numpy as np
 import csv
+import re
 from typing import Dict, List, Any
 from utils.data_processor import produce_matched_ingredient_for_cart
 
@@ -35,6 +36,7 @@ class LineCookService:
             "grocery_embeddings_whole_foodst.npy"
         ),
         ]
+        self.weight_regex = re.compile(r"(?<!\d)(\d+(\.\d+)?)(\s*)?(oz|lb|lbs|l|ml)\b", re.IGNORECASE)
 
         self.database_paths = database_paths
         print(f"Database paths: {database_paths}")
@@ -106,10 +108,13 @@ class LineCookService:
     The format for the output should be a list of strings, where each string is a specific ingredient found here: {closest_ingredients} that matches the ingredient I am looking for."""
         matches = self.get_llm_response(prompt)
 
-        if matches == 'None':
+        if matches.lower() == 'none':
             return []
-        else:
-            return ast.literal_eval(matches)
+        try:
+            matches = ast.literal_eval(matches)
+        except:
+            matches = []
+        return matches
 
     def LLM_remove_basic_ingredients(self, recipe: Dict[str, List[str]]) -> Dict[str, List[str]]:
         prompt = f""" Given the following recipe: {recipe} Assume the user already has access to basic ingredients. Example of basic ingredients are salt, pepper, olive oil, sugar, water etc. 
@@ -135,10 +140,10 @@ class LineCookService:
     def search_for_ingreds(self, recipe: Dict[str, List[str]], store_num: int, budget_preference: int):
         def convert_prices_to_lbs(df: pd.DataFrame) -> pd.DataFrame:
             def extract_weight_and_convert(price: float, name: str) -> float:
-                import re
+                
                 # Enhanced regex to exclude percentages and invalid matches
-                match = re.search(
-                    r"(?<!\d)(\d+(\.\d+)?)(\s*)?(oz|lb|lbs|l|ml)\b", name.lower())
+                match = self.weight_regex.search(name.lower())
+
 
                 if match:
                     weight = float(match.group(1))  # Extract numeric value
@@ -184,11 +189,11 @@ class LineCookService:
 
         # Assign weights based on budget preference
         weight_map = {
-            1: (1, -0.2), # Strong bias towards similarity, little concern for price
-            2: (1, -0.1), # Moderate bias towards similarity, minor concern for price
-            3: (1, 0),  # Neutral balance between similarity and price
-            4: (1, 0.2),  # Moderate bias towards cheaper prices
-            5: (1, 0.5),  # Strong bias towards cheaper prices
+            1: (1, -0.1), 
+            2: (1, -0.05), 
+            3: (1, 0),  
+            4: (1, 0.2), 
+            5: (1, 0.5), 
         }
         w_s, w_p = weight_map[budget_preference]
 
@@ -221,30 +226,28 @@ class LineCookService:
             similarity_scores = self.get_similarity_scores(
                 ingredient, store_num, self.n_products)
             print("SIMILARITY DATAFRAME: \n", similarity_scores)
-            updated_df = convert_prices_to_lbs(similarity_scores)
 
-            # Step 2: Normalize prices and similarity scores
-            updated_df['Normalized Price'] = normalize_column(
-                updated_df['Price per lb'])
-            print("UPDATED DATAFRAME:  \n", updated_df)
-
-            # Step 3: Use LLM to find acceptable ingredients
-            closest_ingredients = updated_df['Category Name'].tolist()
+            # Step 2: Use LLM to find acceptable ingredients before converting or normalizing
+            closest_ingredients = similarity_scores['Category Name'].tolist()
             acceptable_ingredients = self.LLM_find_matches(
                 closest_ingredients, ingredient, recipe)
             print("ACCEPTABLE INGREDIENTS:  \n", acceptable_ingredients)
 
-            # Filter DataFrame for acceptable ingredients
-            filtered_df = updated_df[updated_df['Category Name'].isin(
-                acceptable_ingredients)]
-            
+            # Step 3: Filter the DataFrame for only acceptable ingredients
+            filtered_df = similarity_scores[similarity_scores['Category Name'].isin(acceptable_ingredients)]
 
-            # Step 4: Calculate final scores
+            # Step 4: Convert prices to price per lbs and normalize prices only for acceptable ingredients
+            filtered_df = convert_prices_to_lbs(filtered_df)
+            filtered_df['Normalized Price'] = normalize_column(filtered_df['Price per lb'])
+            print("UPDATED DATAFRAME AFTER PRICE CONVERSION AND NORMALIZATION: \n", filtered_df)
+
+            # Step 5: Calculate final scores
             filtered_df['Final Score'] = filtered_df.apply(
                 lambda row: calculate_final_score(row['Similarity Score'], row['Normalized Price'], w_s, w_p),
-                axis=1  # Ensure row-wise application
+                axis=1
             )
-            print("FILTERED ACCEPTABLE DATAFRAME WITH FINAL SCORE:  \n", filtered_df)
+            print("FILTERED ACCEPTABLE DATAFRAME WITH FINAL SCORE: \n", filtered_df)
+
 
             # Select best match and exclude "None" matches
             if not filtered_df.empty:

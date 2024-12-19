@@ -94,7 +94,7 @@ def handle_chat():
                     {"role": "user", "content": user_message}
                 ]
             )
-            gpt_response = completion["choices"][0]["message"]["content"]
+            gpt_response = completion.choices[0].message.content
             logger.debug(f"GPT-4 response: {gpt_response}")
             response = {
                 'type': 'general',
