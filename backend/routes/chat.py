@@ -51,16 +51,25 @@ def handle_chat():
         if intent == "recipe-related":
             # Step 2: Using LLM to get recipe suggestions for recipe-related queries.
             prompt = (
-                f"You are an expert chef. You will be given a user query about finding recipes. "
-                "Find the 3 most likely dishes that match this query. For each dish, include the title and ingredients list. "
-                "The ingredients must be free from the following allergies: {allergies}."
-                "Return the result strictly as a JSON array in the following format, where each individual ingredients should be separated by ';': "
+                "You are an expert chef. You will be given a query from a user who wants to find a dish. "
+                "The prompt can be vague or specific. "
+                "Your task is to find 3 dishes that best match the user's query. "
+                "For each dish, provide a title and a list of ingredients. "
+                "The user has these allergies: {allergies}. "
+                "If there are no allergies, do not suggest allergy-free or substitute ingredients. For example, if there is no gluten allergy, do not suggest gluten-free buns. "
+                "If there are specified allergies, you must strictly avoid all ingredients that contain those allergens. "
+                "For example if the user has a gluten allergy and wants a hamburger recipe, replace the hamburger buns with gluten-free hamburgern buns. "
+                
+                "Your final answer must be exactly a JSON array with 3 objects. Each object should have the keys 'title' and 'ingredients'. "
+                "The 'ingredients' value should be a single string where each ingredient is separated by a semicolon (';'). "
+                "The final format should be exactly: "
                 "[{'title': '<Dish 1 title>', 'ingredients': '<Dish 1 ingredients>'}, "
                 "{'title': '<Dish 2 title>', 'ingredients': '<Dish 2 ingredients>'}, "
-                "{'title': '<Dish 3 title>', 'ingredients': '<Dish 3 ingredients>'}]."
-                "Only return the JSON array in the specified format and nothing else."
-
+                "{'title': '<Dish 3 title>', 'ingredients': '<Dish 3 ingredients>'}] "
+                "Do not include any commentary, instructions, or additional text outside this JSON array."
             )
+
+
             completion = openai.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
