@@ -8,7 +8,7 @@ Three agents are integrated in our framework:
 #### Demo Layout
 ![](./demo.png)
 
-# Workflow
+## Workflow
 ### Customer Manager
 A `ConversableAgent` that gets customers' requirement and chats with staff.
 
@@ -32,3 +32,53 @@ A `ConversableAgent` that confirms stock availability.
         1. A function getting real-time stock data. A for loop checking every ingredient.
         2. Recommender: Optional
 - Expected Output: An applicable list of ingredients necessary for the dish
+
+
+
+## Setup Instructions
+
+### Clone the repository:
+```bash
+git clone git@github.com:LIYunzhe1408/MealMate.git
+cd MealMate
+```
+
+### Backend Setup
+1. Navigate to the backend directory:
+    ```bash
+    cd backend
+    ```
+
+2. Create and activate a virtual environment:
+    ```bash
+    python -m venv venv
+    source venv/bin/activate   # On Windows: venv\Scripts\activate
+    ```
+3. Install dependencies:
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+4. Launch backend:
+    ```bash
+    python app.py
+    ```
+
+### Frontend Setup
+1. Navigate to the frontend directory:
+    ```bash
+    cd frontend
+    ```
+2. Install dependencies:
+    ```bash
+    npm install
+    ```
+3. Launch the development server:
+    ```bash
+    npm start
+    ```
+
+
+## Additional Notes
+- Ensure you have Python 3.8+ and Node.js 14+ installed for compatibility.
+- For deployment instructions, refer to the `DEPLOYMENT.md` file (if applicable).

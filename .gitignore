@@ -1,6 +1,11 @@
-.idea/
-.cache/LineCookAgent/food.csv
-line_cook_env/
+venv/
 __pycache__/
+.env
+node_modules/
+*.log
+dist/
 *.pyc
-
+*.pyo
+.DS_Store
+*.iml
+*.xml
