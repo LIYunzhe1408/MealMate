@@ -1,4 +1,7 @@
 # MealMate: From Food Cravings to Shopping Carts  
+Contributors: [Jonas Li](https://github.com/LIYunzhe1408), [Jasper Liu](https://github.com/JJJasperl), [Mats Martinussen](https://github.com/MatsStuben), [Emil Klovning](https://github.com/emilklo), [Jason Ji](https://github.com/20jij), [Qinghe Zheng](https://github.com/zqh0429)
+
+Affiliation: UC Berkeley
 
 MealMate is an intelligent meal planning assistant that simplifies food shopping by seamlessly integrating recipe generation, ingredient availability checks, and personalized substitutions. Powered by advanced multi-agent collaboration and large language models (LLMs), MealMate delivers tailored shopping lists based on user preferences and real-time store inventory.
 
